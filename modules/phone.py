@@ -81,8 +81,8 @@ class Phone:
         self.args = args
 
         # Initialisation des boutons
-        self.but_ok = Pin("PC17", "INPUT") # À remplacer par J4.38
-        self.but_esc = Pin("J4.40", "INPUT")
+        self.but_ok = Pin("J4.34", "INPUT")
+        self.but_esc = Pin("J4.36", "INPUT")
 #        self.but_g25 = Pin("PC17", "INPUT")
 
         # Initialisation du OLED
