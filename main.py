@@ -38,6 +38,39 @@ from modules.fona import Fona
 
 from lxml import etree
 
+# Arietta G25
+#=============
+
+#'J4.7'  PA23
+#'J4.8'  PA22
+#'J4.10' PA21
+#'J4.11' PA24   SPI1 CS0
+#'J4.12' PA31   Display reset
+#'J4.13' PA25
+#'J4.14' PA30   Display clear
+#'J4.15' PA26
+#'J4.17' PA27
+#'J4.19' PA28
+#'J4.21' PA29
+#'J4.23' PA0
+#'J4.24' PA1
+#'J4.25' PA8
+#'J4.26' PA7    Power key
+#'J4.27' PA6    Row 0
+#'J4.28' PA5    Power
+#'J4.29' PC28   Row 1
+#'J4.30' PC27   Network
+#'J4.31' PC4    Row 2
+#'J4.32' PC31   Ring indicator
+#'J4.33' PC3    Row 3
+#'J4.34' PB11
+#'J4.35' PC2    Col 0
+#'J4.36' PB12
+#'J4.37' PC1    Col 1
+#'J4.38' PB13
+#'J4.39' PC0    Col 2
+#'J4.40' PB14
+
 #===============================================================================
 # Classe :      Phone
 # Description : Classe d'application générale.
