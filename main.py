@@ -23,8 +23,7 @@
 
 import argparse, logging, sys
 from multiprocessing import Process, Pipe
-#from random import randint
-from modules.pins import *
+import logging
 import time
 
 import Adafruit_GPIO.SPI as SPI
@@ -70,6 +69,20 @@ from lxml import etree
 #'J4.38' PB13
 #'J4.39' PC0    Col 2
 #'J4.40' PB14
+
+#===============================================================================
+# Fonction :    msg(msg, args, lvl)
+# Description : Cette fonction permet d'utiliser une seule fonction pour toute
+#               impression (print ou log) dependamment des arguments en ligne
+#               de commande. On ne devrait jamais utiliser directement 'print'
+#               et 'logging.log' dans le reste du programme, toujours 'msg'.
+#===============================================================================
+def msg(msg, args=None, lvl=logging.INFO):
+    if args is None or args.verbose:
+        print msg
+
+    elif args.logfile:
+        logging.log(lvl, msg)
 
 #===============================================================================
 # Classe :      Phone

@@ -4,7 +4,11 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-Problème : J'ai oublié de commander un régulateur de tension step-up dc-dc pour monter à 5V (requis par le Arietta G25). Par contre j'ai lu sur internet qu'on peut l'alimenter a 3.3V (meme le module Wifi) en enlevant une petite résistance pour désactiver le régulateur. Ça vaut la peine d'essayer!
+### 2014-11-14 12:57
+
+J'ai posé une question sur le Google Group par rapport au SPI, il n'apparaît pas dans /dev et ça semble être une erreur du côté de Acme Systems.
+
+Ce site indique comment contrôler le bouton P1 sur le Arietta G25 : [Arietta on-board button](http://www.acmesystems.it/arietta_p1_button). Je pourrais faire des tests avec ce bouton et le raccorder sur inotify pour générer des interrupts. Ça va être très pratique pour l'utilisation normale du téléphone (mise en veille / réveil).
 
 ### 2014-10-08 20:01
 

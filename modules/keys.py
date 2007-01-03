@@ -1,7 +1,7 @@
 #!/usr/bin/python
 #-*- coding: utf-8 -*-
 
-from pins import *
+from ablib import Pin
 from time import sleep, time
 
 class keypad:
@@ -10,34 +10,31 @@ class keypad:
         self.row = list()
         self.col = list()
 
-        self.row.append('P8_7')
-        self.row.append('P8_9')
-        self.row.append('P8_11')
-        self.row.append('P8_13')
+        self.row.append(Pin('J4.27', 'OUTPUT')) # Row 0
+        self.row.append(Pin('J4.29', 'OUTPUT')) # Row 1
+        self.row.append(Pin('J4.31', 'OUTPUT')) # Row 2
+        self.row.append(Pin('J4.33', 'OUTPUT')) # Row 3
 
-        self.col.append('P8_15')
-        self.col.append('P8_17')
-        self.col.append('P8_19')
+        self.col.append(Pin('J4.35', 'INPUT')) # Col 0
+        self.col.append(Pin('J4.37', 'INPUT')) # Col 1
+        self.col.append(Pin('J4.39', 'INPUT')) # Col 2
 
         for r in self.row:
-            set_output(r)
-            set_low(r)
-
-        for c in self.col:
-            set_input(c)
+            r.on()
 
         self.key = [['1', '2', '3'], ['4', '5', '6'], ['7', '8', '9'], ['*', '0', '#']]
 
     def read(self):
+
         for r in self.row:
-            set_high(r)
+            r.off()
 
             for c in self.col:
-                if get_input(c):
-                    set_low(r)
+                if not c.get_value():
+                    r.on()
                     return self.key[self.row.index(r)][self.col.index(c)]
 
-            set_low(r)
+            r.on()
 
         return None
 

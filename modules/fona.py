@@ -4,7 +4,22 @@
 from datetime import datetime
 from time import sleep
 import re, serial, sys
-from pins import *
+from ablib import Pin
+import logging
+
+#===============================================================================
+# Fonction :    msg(msg, args, lvl)
+# Description : Cette fonction permet d'utiliser une seule fonction pour toute
+#               impression (print ou log) dependamment des arguments en ligne
+#               de commande. On ne devrait jamais utiliser directement 'print'
+#               et 'logging.log' dans le reste du programme, toujours 'msg'.
+#===============================================================================
+def msg(msg, args=None, lvl=logging.INFO):
+    if args is None or args.verbose:
+        print msg
+
+    elif args.logfile:
+        logging.log(lvl, msg)
 
 #===============================================================================
 # Classe :      SMS
@@ -29,10 +44,10 @@ class Fona:
 
     # Initialisation
     #================
-    def __init__(self, args=None, power_key='P9_12', power_status='P9_15', network_status='P9_23', ring='P9_27'):
+    def __init__(self, args=None, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32'):
         self.args = args
 
-        self.ser = serial.Serial('/dev/ttyO1')
+        self.ser = serial.Serial(port)
         self.ser.baudrate = 115200
         self.ser.bytesize = 8
         self.ser.parity = 'N'
@@ -42,31 +57,23 @@ class Fona:
         self.ser.rtscts = 0
 
         # Configuration des pins de contrôle
-        self.power_key = power_key
-        self.power_status = power_status
-        self.network_status = network_status
-        self.ring = ring
+        self.power_key = Pin(power_key, 'HIGH')
+        self.power_status = Pin(power_status, 'INPUT')
+        self.network_status = Pin(network_status, 'INPUT')
+        self.ring = Pin(ring, 'INPUT')
 
-        set_output(self.power_key, self.args)
-        set_high(self.power_key, self.args)
-        set_input(self.power_status, self.args)
-        set_input(self.network_status, self.args)
-        set_input(self.ring, self.args)
+        self.pwr = self.power_status.get()
+        self.rng = self.ring.get()
 
-        self.pwr = get_input(self.power_status, self.args)
-        #self.ntk = get_input(self.network_status, self.args)
-        self.rng = get_input(self.ring, self.args)
-
-        # Demarre le Fona s'il ne l'est pas deja
+        # Démarre le Fona s'il ne l'est pas déja
         if not self.pwr:
             msg('Demarrage du module Fona...', self.args)
-            set_low(self.power_key, self.args)
+            self.power_key.off()
             sleep(2)
-            set_high(self.power_key, self.args)
+            self.power_key.on()
             sleep(2)
 
         msg('Power Status: ' + str(self.pwr), self.args)
-        #msg('Network Status: ' + str(self.ntk), self.args)
         msg('Ring Indicator: ' + str(self.rng), self.args)
 
         # Configuration générale
@@ -91,9 +98,9 @@ class Fona:
 
     def turn_off(self):
         msg('Fermeture du module Fona...', self.args)
-        set_low(self.power_key, self.args)
+        self.power_key.off()
         sleep(2)
-        set_high(self.power_key, self.args)
+        self.power_key.on()
 
     def power_off(self):
         self.turn_off()
@@ -135,15 +142,11 @@ class Fona:
             return self.write('ATE0')
 
     def update_status(self):
-        tmp = get_input(self.power_status, self.args)
+        tmp = self.power_status.get()
         if tmp != self.pwr:
             self.pwr = tmp
             msg('Power Status: ' + str(self.pwr), self.args)
-        #tmp = get_input(self.network_status, self.args)
-        #if tmp != self.ntk:
-            #self.ntk = tmp
-            #msg('Network Status: ' + str(self.ntk), self.args)
-        tmp = get_input(self.ring, self.args)
+        tmp = self.ring.get()
         if tmp != self.rng:
             self.rng = tmp
             msg('Ring Indicator: ' + str(self.rng), self.args)
@@ -202,7 +205,7 @@ class Fona:
         return self.read(self.ser.inWaiting())
 
     def new_sms(self):
-        if new_data():
+        if self.new_data():
             r = self.read(self.ser.inWaiting())
             if '+CMTI: "SM",' in r:
                 return r.split(',')[2]
