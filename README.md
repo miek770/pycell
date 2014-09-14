@@ -4,6 +4,8 @@
 
 L'idee est de faire un telephone portable (cellulaire) avec un systeme Linux complet (incluant un gestionnaire de paquets) et les fonctionalites cellulaires essentielles.
 
+Problème : J'ai oublié de commander un régulateur de tension step-up dc-dc pour monter à 5V (requis par le Arietta G25).
+
 ## Materiel envisage
 
 ### Ordinateur
