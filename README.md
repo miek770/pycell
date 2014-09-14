@@ -1,7 +1,5 @@
 # Projet de telephone portable
 
-Numero : 418-455-9060
-
 ## Sommaire
 
 L'idee est de faire un telephone portable (cellulaire) avec un systeme Linux complet (incluant un gestionnaire de paquets) et les fonctionalites cellulaires essentielles.
