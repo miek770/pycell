@@ -18,28 +18,86 @@ class Fona:
         self.ser.xonxoff = 0
         self.ser.rtscts = 0
 
-        # Set SMS system into text mode, as opposed to PDU mode
-        self.write('AT+CMGF=1')
+        # Mode texte pour les SMS
+        self.text_mode()
 
-    def send_sms(self, num, msg, raw=False):
-        self.ser.write('AT+CMGS="{0}"\r'.format(num))
-        sleep(0.01)
-        self.ser.write('{0}{1}'.format(msg, chr(26)))
-        sleep(0.01)
-        r = self.ser.read(self.ser.inWaiting())
-        if not raw:
-            return r.split('\n')[1].split('\r')[0]
-        else:
-            return r
+        # Désactive l'écho
+        self.echo_off()
 
-    # Écrit une commande et retourne le résultat (nettoyé)
+    # Commandes de base et configuration
     #======================================================
-    def write(self, s, raw=False):
+
+    def write(self, s):
         self.ser.write('{0}\n'.format(s))
-        sleep(0.01)
-        r = self.ser.read(self.ser.inWaiting())
-        if not raw:
-            return r.split('\n')[1].split('\r')[0]
+        sleep(0.05)
+        return self.ser.read(self.ser.inWaiting())
+
+    def read(self, l=False):
+        if self.new_data():
+            if l<= self.ser.inWaiting():
+                return self.ser.read(l)
+            else:
+                return self.ser.read(self.ser.inWaiting())
+
+    def new_data(self):
+        if self.ser.inWaiting():
+            return True
         else:
-            return r
+            return False
+
+    def get_config(self):
+        return self.write('AT&V')
+
+    def text_mode(self):
+        return self.write('AT+CMGF=1')
+
+    def echo_off(self):
+        return self.write('ATE0')
+
+    def echo_on(self):
+        return self.write('ATE1')
+
+    # Commandes liées aux SMS
+    #==================================
+
+    def send_sms(self, num, msg):
+        self.ser.write('AT+CMGS="{0}"\r'.format(num))
+        sleep(0.05)
+        self.ser.write('{0}{1}'.format(msg, chr(26)))
+        sleep(0.05)
+        return self.ser.read(self.ser.inWaiting())
+
+    def new_sms(self):
+        if new_data():
+            r = self.ser.read(self.ser.inWaiting())
+            if '+CMTI: "SM",' in r:
+                return r.split(',')[2]
+            else:
+                return False
+        else:
+            return False
+
+    def read_sms(self, id):
+        if id:
+            return self.write('AT+CMGR={0}'.format(int(id)))
+        else:
+            return False
+
+    def read_all_sms(self):
+        return self.write('AT+CMGL="ALL"')
+
+    # Commandes liées à la voix
+    #===========================
+
+    def call(self, num):
+        return self.write('ATD{0};'.format(num))
+
+    def hang_up(self):
+        return self.write('ATH')
+
+    def redial(self):
+        return self.write('ATDL')
+
+    def answer(self):
+        return self.write('ATA')
 

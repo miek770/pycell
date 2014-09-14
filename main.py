@@ -61,8 +61,8 @@ def main():
 
     msg('Programme lancé.', args)
 
-    # Lancement des sous-routines
-    #=============================
+    # Configuration
+    #===============
 
     set_output(power_key, args)
     set_high(power_key, args)
@@ -77,6 +77,15 @@ def main():
     msg('Power Status: ' + str(pwr), args)
     msg('Network Status: ' + str(ntk), args)
     msg('Ring Indicator: ' + str(rng), args)
+
+    # Lancement des sous-routines
+    #=============================
+
+    # Commandes utilisateur
+    keys_parent_conn, keys_child_conn = Pipe()
+    keys_sub = Process(target=keys.scan, args=(keys_child_conn, args))
+    keys_sub.start()
+    msg('Sous-routine lancée : keys_sub', args)
 
     # Boucle principale
     #===================
