@@ -4,7 +4,9 @@
 
 L'idee est de faire un telephone portable (cellulaire) avec un systeme Linux complet (incluant un gestionnaire de paquets) et les fonctionalites cellulaires essentielles.
 
-Problème : J'ai oublié de commander un régulateur de tension step-up dc-dc pour monter à 5V (requis par le Arietta G25).
+Problème : J'ai oublié de commander un régulateur de tension step-up dc-dc pour monter à 5V (requis par le Arietta G25). Par contre j'ai lu sur internet qu'on peut l'alimenter a 3.3V (meme le module Wifi) en enlevant une petite resistance pour desactiver le regulateur. Ca vaut la peine d'essayer!
+
+Probleme : J'ai beaucoup de misere a faire fonctionner le OLED. Apres avoir teste chaque pin avec l'oscilloscope, et verifie toutes les continuites des pins, je commence a croire que le probleme est un defaut du OLED. J'ai demande de l'aide sur le forum d'Adafruit.
 
 ## Materiel envisage
 
