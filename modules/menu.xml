@@ -1,4 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<menu>
-    <Call>
+<MainMenu>
 
+    <Phone>
+        <Title>Phone</Title>
+        <Submenu>
+
+            <Keypad>
+                <Title>Dial number</Title>
+                <Exec>call_number</Exec>
+            </Keypad>
+
+            <Favorites>
+                <Title>Call favorite contact</Title>
+            </Favorites>
+
+            <Contacts>
+                <Contacts>Call contact</Contacts>
+                <Exec>generate_contacts</Exec>
+            </Contacts>
+
+            <Messages>
+                <Title>Vocal messages</Title>
+            </Messages>
+
+        </Submenu>
+    </Phone>
+
+    <TextMessage>
+        <Title>Text messages</Title>
+    </TextMessage>
+
+    <Email>
+        <Title>Emails</Title>
+    </Email>
+
+    <Contacts>
+        <Title>Contacts</Title>
+        <Exec>generate_contacts</Exec>
+    </Contacts>
+
+    <Calendar>
+        <Title>Calendar</Title>
+    </Calendar>
+
+    <Settings>
+        <Title>Settings</Title>
+    </Settings>
+
+</MainMenu>

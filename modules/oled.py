@@ -33,8 +33,7 @@ class oled:
         self.disp.clear()
         self.disp.display()
 
-        self.buff = list()
-        self.cursor = 0
+        # Initialisation du menu
         self.maxlines = 6
 
         # Initialize keypad
@@ -42,7 +41,37 @@ class oled:
         self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
         self.keypad_sub.start()
 
-        self.menu = etree.parse(menufile)
+    def init_menu(self):
+        # Initialise le menu
+        self.menu = etree.parse(menufile).getroot().find('MainMenu')
+        self.buff = list()
+        self.cursor = 0
+
+        for m in self.menu:
+            self.buff.append(m.find(Title).text)
+
+        self.refresh()
+
+    def go_child(self, submenu):
+        self.menu = self.menu.find(submenu).find('Submenu')
+        self.buff = list()
+        self.cursor = 0
+
+        for m in self.menu:
+            if m.tag =
+            self.buff.append(m.find(Title).text)
+
+        self.refresh()
+
+    def go_parent(self):
+        self.menu = self.menu.findall('..//..')
+        self.buff = list()
+        self.cursor = 0
+
+        for m in self.menu:
+            self.buff.append(m.find(Title).text)
+
+        self.refresh()
 
     def refresh(self):
         # Create blank image for drawing.
@@ -86,15 +115,36 @@ class oled:
         self.refresh()
 
     def loop(self):
-        self.welcome()
-        
+#        self.welcome()
+        self.init_menu()
+
         while True:
             if self.keypad_parent_conn.poll():
                 key = self.keypad_parent_conn.recv()
-                if key == '2':
+                if key == '1':
+                    pass
+                elif key == '2':
                     self.scroll_up()
+                elif key == '3':
+                    self.go_parent()
+                elif key == '4':
+                    pass
+                elif key == '5':
+                    self.go_child()
+                elif key == '6':
+                    self.go_child()
+                elif key == '7':
+                    pass
                 elif key == '8':
                     self.scroll_down()
+                elif key == '9':
+                    pass
+                elif key == '0':
+                    pass
+                elif key == '*':
+                    pass
+                elif key == '#':
+                    pass
             time.sleep(0.1)
 
 if __name__ == '__main__':
