@@ -64,7 +64,7 @@ class oled:
 
             self.refresh()
         else:
-            s = self.menu.('Exec').text
+            s = self.menu.find('Exec').text
             if s:
                 print '[Debug] Exécution de : {}'.format(s)
             else:
