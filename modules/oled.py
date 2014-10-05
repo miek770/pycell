@@ -52,26 +52,35 @@ class oled:
 
         self.refresh()
 
-    def go_child(self, submenu):
-        self.menu = self.menu.find(submenu).find('Submenu')
-        self.buff = list()
-        self.cursor = 0
+    def go_child(self):
+        s = self.menu.find('Submenu')
+        if s:
+            self.menu = s
+            self.buff = list()
+            self.cursor = 0
 
-        for m in self.menu:
-            if m.tag =
-            self.buff.append(m.find(Title).text)
+            for m in self.menu:
+                self.buff.append(m.find(Title).text)
 
-        self.refresh()
+            self.refresh()
+        else:
+            s = self.menu.('Exec').text
+            if s:
+                print '[Debug] Exécution de : {}'.format(s)
+            else:
+                print '[Erreur] Aucun <Submenu> ni <Exec> de défini pour {}'.format(self.menu.tag)
 
     def go_parent(self):
-        self.menu = self.menu.findall('..//..')
-        self.buff = list()
-        self.cursor = 0
+        s = self.menu.find('..//..')
+        if s:
+            self.menu = s
+            self.buff = list()
+            self.cursor = 0
 
-        for m in self.menu:
-            self.buff.append(m.find(Title).text)
+            for m in self.menu:
+                self.buff.append(m.find(Title).text)
 
-        self.refresh()
+            self.refresh()
 
     def refresh(self):
         # Create blank image for drawing.
