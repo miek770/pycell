@@ -1,4 +1,4 @@
-#!/root/marcus/bin/python
+#!/usr/bin/python
 # -*- coding: utf-8 -*-
 #
 #  pins.py

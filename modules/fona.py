@@ -1,4 +1,4 @@
-#!/root/cell/bin/python
+#!/usr/bin/python
 #-*- coding: utf-8 -*-
 
 from time import sleep
