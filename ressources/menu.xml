@@ -15,7 +15,7 @@
             </Favorites>
 
             <Contacts>
-                <Contacts>Call contact</Contacts>
+                <Title>Call contact</Title>
                 <Exec>generate_contacts</Exec>
             </Contacts>
 

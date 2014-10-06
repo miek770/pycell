@@ -27,9 +27,9 @@ class Fona:
     # Commandes de base et configuration
     #======================================================
 
-    def write(self, s):
-        self.ser.write('{0}\n'.format(s))
-        sleep(0.05)
+    def write(self, string, delay=0.05):
+        self.ser.write('{}\n'.format(string))
+        sleep(delay)
         return self.ser.read(self.ser.inWaiting())
 
     def read(self, l=False):
@@ -84,7 +84,7 @@ class Fona:
             return False
 
     def read_all_sms(self):
-        return self.write('AT+CMGL="ALL"')
+        return self.write('AT+CMGL="ALL"', delay=0.2)
 
     # Commandes liées à la voix
     #===========================
