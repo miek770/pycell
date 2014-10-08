@@ -45,7 +45,7 @@ class Fona:
         else:
             return False
 
-    def get_config(self):
+    def get_config(self, delay=0.3):
         return self.write('AT&V')
 
     def text_mode(self):
@@ -84,7 +84,15 @@ class Fona:
             return False
 
     def read_all_sms(self):
-        return self.write('AT+CMGL="ALL"', delay=0.2)
+        # Plus il y aura de SMS en mémoire plus cette fonction prendra
+        # de temps à s'exécuter. Il faudra éventuellement que je
+        # m'arranger pour que la fonction attende le temps nécessaire,
+        # ni plus ni moins. Je pourrais attendre le OK à la fin par
+        # exemple.
+        #
+        # En fait ça pourrait être le comportement par défaut de
+        # self.write().
+        return self.write('AT+CMGL="ALL"', delay=0.3)
 
     # Commandes liées à la voix
     #===========================

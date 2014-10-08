@@ -27,6 +27,7 @@ from multiprocessing import Process, Pipe
 #from random import randint
 from modules.pins import *
 import time
+from datetime import datetime
 
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306
@@ -39,16 +40,19 @@ from modules import fona
 
 from lxml import etree
 
-power_key = 'P9_12'
-power_status = 'P9_15'
-network_status = 'P9_23'
-ring = 'P9_27'
+POWER_KEY = 'P9_12'
+POWER_STATUS = 'P9_15'
+NETWORK_STATUS = 'P9_23'
+RING = 'P9_27'
 
 #===============================================================================
 # Classe :      Oled
 # Description : 
 #===============================================================================
 class Oled:
+
+    # Initialisation
+    #================
     def __init__(self, args, menufile='ressources/menu.xml'):
         self.args = args
 
@@ -76,6 +80,32 @@ class Oled:
         self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
         self.keypad_sub.start()
 
+        # Initialisation du module Fona
+        self.phone = fona.Fona()
+
+        set_output(POWER_KEY, self.args)
+        set_high(POWER_KEY, self.args)
+        set_input(POWER_STATUS, self.args)
+        set_input(NETWORK_STATUS, self.args)
+        set_input(RING, self.args)
+
+        self.pwr = get_input(POWER_STATUS, self.args)
+        #self.ntk = get_input(NETWORK_STATUS, self.args)
+        self.rng = get_input(RING, self.args)
+
+        # Demarre le Fona s'il ne l'est pas deja
+        if not self.pwr:
+            msg('Demarrage du module Fona...', self.args)
+            set_low(POWER_KEY, self.args)
+            time.sleep(2)
+            set_high(POWER_KEY, self.args)
+
+        msg('Power Status: ' + str(self.pwr), self.args)
+        #msg('Network Status: ' + str(self.ntk), self.args)
+        msg('Ring Indicator: ' + str(self.rng), self.args)
+
+    # Initialisation du menu
+    #========================
     def init_menu(self):
         # Initialise le menu
         self.menu = etree.parse(self.menufile).getroot()
@@ -87,11 +117,63 @@ class Oled:
 
         self.refresh()
 
+    # Générateurs (associés à ressources/menu.xml)
+    #==============================================
+    def gen_msg(self):
+        msg = self.phone.get_all_sms()
+
+        msg = msg.split('\r\n+CMGL: ')
+        msg.pop(0)
+
+        for m in msg:
+            (a, b) = m.split(',', 1)
+            index = int(a)
+
+            (a, b) = b.split(',', 1)
+            status = a.strip('"')
+
+            (a, b) = b.split(',', 1)
+            number = a.strip('"+')
+
+            (a, b) = b.split(',', 1) # a = '""'
+
+            (a, b) = b.split(',', 1)
+            (a1, b) = b.split('"\r\n', 1)
+            when = datetime.strptime('{} {}'.format(a, a1).strip('"')[:-3], '%y/%m/%d %H:%M%S')
+
+            message = b[:-2]
+
+    # Cette fonction va devoir créer des sous-menus à partir d'une liste de tuples bâtie ainsi :
+    # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
+    #
+    #   Nom = Nom de l'élément (interne)
+    #   Titre = Titre de l'élément du menu à afficher
+    #   Action = "Exec" ou "Generator"
+    #   Commande = Nom de la fonction à appeler
+
+    def create_submenus(self, generator):
+
+        # Génère les sous-menus à partir du générateur
+        submenus = eval('self.{}()'.format(generator))
+
+        # Commence par effacer les sous-menus actuels
+        self.menu.remove(self.menu[self.cursor].find('Submenu'))
+
+        # Popule le nouveau sous-menu
+        self.menu.SubElement(self.menu[self.cursor], 'Submenu')
+        for menu in submenus:
+            self.menu.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
+
+            self.menu.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0], 'Title'))
+            self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
+
+            self.menu.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0], menu[2]))
+            self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[3]
+
     def go_child(self):
-        
-        s = self.menu[self.cursor].find('Submenu')
-        if s is not None:
-            self.menu = s
+        if self.menu[self.cursor].find('Generator'):
+            self.create_submenus(self.menu[self.cursor].find('Generator').text)
+            self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()
             self.cursor = 0
 
@@ -99,16 +181,29 @@ class Oled:
                 try:
                     self.buff.append(m.find('Title').text)
                 except AttributeError:
-                    msg('[Debug] Aucun champ Title pour {}'.format(m.tag), self.args)
+                    msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
 
             self.refresh()
-        else:
-            try:
-                s = self.menu[self.cursor].find('Exec').text
-                msg('[Debug] Exécution de : {}'.format(s), self.args)
-            except AttributeError:
-                msg('[Erreur] Aucun <Submenu> ni <Exec> de défini pour {}'.format(self.menu[self.cursor].tag), self.args)
 
+        elif self.menu[self.cursor].find('Submenu'):
+            self.menu = self.menu[self.cursor].find('Submenu')
+            self.buff = list()
+            self.cursor = 0
+
+            for m in self.menu:
+                try:
+                    self.buff.append(m.find('Title').text)
+                except AttributeError:
+                    msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
+
+            self.refresh()
+
+        elif self.menu[self.cursor].find('Exec'):
+            msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
+
+        else:
+            msg('[Erreur] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag), self.args)
+        
     def go_parent(self):
         try:
             self.menu = self.menu.find('..').find('..')
@@ -156,45 +251,19 @@ class Oled:
             self.cursor -= 1
             self.refresh()
 
-    def welcome(self):
-        self.buff.append(u'1 Hello world!')
-        self.buff.append(u'2 Mon nom est Michel.')
-        self.buff.append(u'3 Ceci est un test.')
-        self.buff.append(u'4 Je veux voir si ca')
-        self.buff.append(u'5 marche, mais je ne')
-        self.buff.append(u'6 suis pas inquieté')
-        self.cursor = len(self.buff) - 6
-        self.refresh()
-
-    def loop(self):
-        while True:
-            if self.keypad_parent_conn.poll():
-                key = self.keypad_parent_conn.recv()
-                if key == '1':
-                    pass
-                elif key == '2':
-                    self.scroll_up()
-                elif key == '3':
-                    pass
-                elif key == '4':
-                    self.go_parent()
-                elif key == '5':
-                    self.go_child()
-                elif key == '6':
-                    self.go_child()
-                elif key == '7':
-                    pass
-                elif key == '8':
-                    self.scroll_down()
-                elif key == '9':
-                    pass
-                elif key == '0':
-                    pass
-                elif key == '*':
-                    pass
-                elif key == '#':
-                    pass
-            time.sleep(0.1)
+    def update_fona_status(self):
+            tmp = get_input(POWER_STATUS, self.args)
+            if tmp != self.pwr:
+                self.pwr = tmp
+                msg('Power Status: ' + str(self.pwr), self.args)
+            #tmp = get_input(NETWORK_STATUS, self.args)
+            #if tmp != self.ntk:
+                #self.ntk = tmp
+                #msg('Network Status: ' + str(self.ntk), self.args)
+            tmp = get_input(RING, self.args)
+            if tmp != self.rng:
+                self.rng = tmp
+                msg('Ring Indicator: ' + str(self.rng), self.args)
 
 #===============================================================================
 # Fonction :    main
@@ -213,11 +282,6 @@ def main():
                         action='store',
                         help='Spécifie le chemin du journal d\'événement.')
 
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='Augmenter considerablement les messages.')
-
     args = parser.parse_args()
 
     if args.logfile:
@@ -226,36 +290,15 @@ def main():
                             datefmt='%Y/%m/%d %H:%M:%S ',
                             level=logging.DEBUG)
 
-        if args.debug:
-            msg('Logger initié : ' + args.logfile, args)
+        msg('Logger initié : ' + args.logfile, args)
 
-    if args.debug:
-        msg('Programme lancé.', args)
-
-    # Configuration
-    #===============
-
-    set_output(power_key, args)
-    set_high(power_key, args)
-    set_input(power_status, args)
-    set_input(network_status, args)
-    set_input(ring, args)
-
-    pwr = get_input(power_status, args)
-    ntk = get_input(network_status, args)
-    rng = get_input(ring, args)
-
-    msg('Power Status: ' + str(pwr), args)
-    msg('Network Status: ' + str(ntk), args)
-    msg('Ring Indicator: ' + str(rng), args)
+    msg('Programme lancé.', args)
 
     # Lancement des sous-routines
     #=============================
 
     oled = Oled(args)
     oled.init_menu()
-
-    phone = fona.Fona()
 
     # Boucle principale
     #===================
@@ -273,18 +316,7 @@ def main():
         if count_10ms == 10:
             count_10ms = 0
 
-            tmp = get_input(power_status, args)
-            if tmp != pwr:
-                pwr = tmp
-                msg('Power Status: ' + str(pwr), args)
-            tmp = get_input(network_status, args)
-            if tmp != ntk:
-                ntk = tmp
-                msg('Network Status: ' + str(ntk), args)
-            tmp = get_input(ring, args)
-            if tmp != rng:
-                rng = tmp
-                msg('Ring Indicator: ' + str(rng), args)
+            oled.update_fona_status()
 
         # S'exécute toutes les 100ms
         if count_100ms == 100:
@@ -320,6 +352,8 @@ def main():
         # S'exécute toutes les 1s
         if count_1000ms == 1000:
             count_1000ms = 0
+
+            pass
 
         count_10ms += 1
         count_100ms += 1

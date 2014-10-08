@@ -12,15 +12,17 @@
 
             <Favorites>
                 <Title>Call favorite contact</Title>
+                <Generator>gen_fav_contacts</Generator>
             </Favorites>
 
             <Contacts>
                 <Title>Call contact</Title>
-                <Exec>generate_contacts</Exec>
+                <Generator>gen_contacts</Generator>
             </Contacts>
 
             <Messages>
                 <Title>Vocal messages</Title>
+                <Generator>gen_voice_msg</Generator>
             </Messages>
 
         </Submenu>
@@ -28,6 +30,7 @@
 
     <TextMessage>
         <Title>Text messages</Title>
+        <Generator>gen_msg</Generator>
     </TextMessage>
 
     <Email>
@@ -36,12 +39,13 @@
 
     <Contacts>
         <Title>Contacts</Title>
-        <Exec>generate_contacts</Exec>
+        <Generator>gen_contacts</Generator>
     </Contacts>
 
-    <Calendar>
-        <Title>Calendar</Title>
-    </Calendar>
+    <Agenda>
+        <Title>Agenda</Title>
+        <Generator>gen_agenda</Generator>
+    </Agenda>
 
     <Settings>
         <Title>Settings</Title>
