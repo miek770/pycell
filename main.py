@@ -20,14 +20,12 @@
 #  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 #  MA 02110-1301, USA.
 #
-#
 
 import argparse, logging, sys
 from multiprocessing import Process, Pipe
 #from random import randint
 from modules.pins import *
 import time
-from datetime import datetime
 
 import Adafruit_GPIO.SPI as SPI
 import Adafruit_SSD1306
@@ -36,20 +34,15 @@ import Image
 import ImageDraw
 import ImageFont
 from modules import keys
-from modules import fona
+from modules.fona import Fona
 
 from lxml import etree
 
-POWER_KEY = 'P9_12'
-POWER_STATUS = 'P9_15'
-NETWORK_STATUS = 'P9_23'
-RING = 'P9_27'
-
 #===============================================================================
-# Classe :      Oled
-# Description : 
+# Classe :      Phone
+# Description : Classe d'application générale.
 #===============================================================================
-class Oled:
+class Phone:
 
     # Initialisation
     #================
@@ -81,34 +74,16 @@ class Oled:
         self.keypad_sub.start()
 
         # Initialisation du module Fona
-        self.phone = fona.Fona()
+        self.fona = Fona(self.args)
 
-        set_output(POWER_KEY, self.args)
-        set_high(POWER_KEY, self.args)
-        set_input(POWER_STATUS, self.args)
-        set_input(NETWORK_STATUS, self.args)
-        set_input(RING, self.args)
-
-        self.pwr = get_input(POWER_STATUS, self.args)
-        #self.ntk = get_input(NETWORK_STATUS, self.args)
-        self.rng = get_input(RING, self.args)
-
-        # Demarre le Fona s'il ne l'est pas deja
-        if not self.pwr:
-            msg('Demarrage du module Fona...', self.args)
-            set_low(POWER_KEY, self.args)
-            time.sleep(2)
-            set_high(POWER_KEY, self.args)
-
-        msg('Power Status: ' + str(self.pwr), self.args)
-        #msg('Network Status: ' + str(self.ntk), self.args)
-        msg('Ring Indicator: ' + str(self.rng), self.args)
+        self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
 
     # Initialisation du menu
     #========================
     def init_menu(self):
         # Initialise le menu
-        self.menu = etree.parse(self.menufile).getroot()
+        self.tree = etree.parse(self.menufile)
+        self.menu = self.tree.getroot()
         self.buff = list()
         self.cursor = 0
 
@@ -117,61 +92,42 @@ class Oled:
 
         self.refresh()
 
-    # Générateurs (associés à ressources/menu.xml)
-    #==============================================
-    def gen_msg(self):
-        msg = self.phone.get_all_sms()
-
-        msg = msg.split('\r\n+CMGL: ')
-        msg.pop(0)
-
-        for m in msg:
-            (a, b) = m.split(',', 1)
-            index = int(a)
-
-            (a, b) = b.split(',', 1)
-            status = a.strip('"')
-
-            (a, b) = b.split(',', 1)
-            number = a.strip('"+')
-
-            (a, b) = b.split(',', 1) # a = '""'
-
-            (a, b) = b.split(',', 1)
-            (a1, b) = b.split('"\r\n', 1)
-            when = datetime.strptime('{} {}'.format(a, a1).strip('"')[:-3], '%y/%m/%d %H:%M%S')
-
-            message = b[:-2]
-
     # Cette fonction va devoir créer des sous-menus à partir d'une liste de tuples bâtie ainsi :
     # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
     #
     #   Nom = Nom de l'élément (interne)
     #   Titre = Titre de l'élément du menu à afficher
-    #   Action = "Exec" ou "Generator"
+    #   Action = "Exec" ou "Generator" ou None
     #   Commande = Nom de la fonction à appeler
+    #
+    # Ce sont les générateurs qui produisent ces listes.
 
     def create_submenus(self, generator):
 
         # Génère les sous-menus à partir du générateur
-        submenus = eval('self.{}()'.format(generator))
+        submenus = eval('self.{}'.format(generator))
 
-        # Commence par effacer les sous-menus actuels
-        self.menu.remove(self.menu[self.cursor].find('Submenu'))
+        # Effacer les sous-menus actuels
+        try:
+            self.menu.remove(self.menu[self.cursor].find('Submenu'))
+        except TypeError:
+            pass
 
         # Popule le nouveau sous-menu
-        self.menu.SubElement(self.menu[self.cursor], 'Submenu')
+        etree.SubElement(self.menu[self.cursor], 'Submenu')
         for menu in submenus:
-            self.menu.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
+            etree.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
 
-            self.menu.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0], 'Title'))
+            etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
             self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
 
-            self.menu.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0], menu[2]))
-            self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[3]
+            if menu[2] is not None and menu[3] is not None:
+                etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
+                msg('[Debug] {}, {}'.format(menu[2], menu[3]), self.args)
+                self.menu[self.cursor].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
     def go_child(self):
-        if self.menu[self.cursor].find('Generator'):
+        if self.menu[self.cursor].find('Generator') is not None:
             self.create_submenus(self.menu[self.cursor].find('Generator').text)
             self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()
@@ -185,7 +141,7 @@ class Oled:
 
             self.refresh()
 
-        elif self.menu[self.cursor].find('Submenu'):
+        elif self.menu[self.cursor].find('Submenu') is not None:
             self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()
             self.cursor = 0
@@ -198,11 +154,11 @@ class Oled:
 
             self.refresh()
 
-        elif self.menu[self.cursor].find('Exec'):
+        elif self.menu[self.cursor].find('Exec') is not None:
             msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
 
         else:
-            msg('[Erreur] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag), self.args)
+            msg('[Debug] Aucune action de définie pour {} :\n\n{}'.format(self.menu[self.cursor].tag, self.menu[self.cursor].dump()), self.args)
         
     def go_parent(self):
         try:
@@ -220,26 +176,65 @@ class Oled:
     def refresh(self):
         # Create blank image for drawing.
         # Make sure to create image with mode '1' for 1-bit color.
-        width = self.disp.width
-        height = self.disp.height
 
-        image = Image.new('1', (width, height))
+        image = Image.new('1', (self.disp.width, self.disp.height))
         draw = ImageDraw.Draw(image)
-        #font = ImageFont.load_default()
-        font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
 
         i = 0
         for l in range(self.cursor, len(self.buff)):
             if i < self.maxlines:
                 if i == 0:
-                    draw.text((0, 10*i), '> {}'.format(self.buff[l]), font=font, fill=255)
+                    draw.text((0, 10*i), '> {}'.format(self.buff[l]), font=self.font, fill=255)
                 else:
-                    draw.text((0, 10*i), self.buff[l], font=font, fill=255)
+                    draw.text((0, 10*i), self.buff[l], font=self.font, fill=255)
                 i += 1
 
         # Display image.
         self.disp.image(image)
         self.disp.display()
+
+    def show(self, message):
+        words = message.split(' ')
+
+        split_msg = ['']
+        current_line = 0
+        line_width = 0
+
+        for word in words:
+            word_width = font.getsize(word)[0]
+
+            if line_width + word_width <= self.disp.width:
+                split_msg[current_line] += word
+                line_width += word_width
+
+            elif word_width > self.disp.width:
+                current_line += 1
+                split_msg.append([''])
+                line_width = 0
+
+                for car in word:
+                    car_width = font.getsize(car)[0]
+
+                    if line_width + car_width <= self.disp.width:
+                        split_msg[current_line] += car
+                        line_width += car_width
+
+                    else:
+                        current_line +=1
+                        split_msg.append([''])
+                        split_msg[current_line] += car
+                        line_width = car_width
+
+            else:
+                current_line += 1
+                split_msg.append([''])
+                split_msg[current_line] += word
+                line_width = word_width
+
+        menu = list()
+
+        for line in split_msg:
+            menu.append((split_msg.index(line), line, None, None))
 
     def scroll_down(self):
         if self.cursor < len(self.buff) - 1:
@@ -250,20 +245,6 @@ class Oled:
         if self.cursor > 0:
             self.cursor -= 1
             self.refresh()
-
-    def update_fona_status(self):
-            tmp = get_input(POWER_STATUS, self.args)
-            if tmp != self.pwr:
-                self.pwr = tmp
-                msg('Power Status: ' + str(self.pwr), self.args)
-            #tmp = get_input(NETWORK_STATUS, self.args)
-            #if tmp != self.ntk:
-                #self.ntk = tmp
-                #msg('Network Status: ' + str(self.ntk), self.args)
-            tmp = get_input(RING, self.args)
-            if tmp != self.rng:
-                self.rng = tmp
-                msg('Ring Indicator: ' + str(self.rng), self.args)
 
 #===============================================================================
 # Fonction :    main
@@ -297,8 +278,8 @@ def main():
     # Lancement des sous-routines
     #=============================
 
-    oled = Oled(args)
-    oled.init_menu()
+    phone = Phone(args)
+    phone.init_menu()
 
     # Boucle principale
     #===================
@@ -316,30 +297,30 @@ def main():
         if count_10ms == 10:
             count_10ms = 0
 
-            oled.update_fona_status()
+            phone.fona.update_status()
 
         # S'exécute toutes les 100ms
         if count_100ms == 100:
             count_100ms = 0
 
-            if oled.keypad_parent_conn.poll():
-                key = oled.keypad_parent_conn.recv()
+            if phone.keypad_parent_conn.poll():
+                key = phone.keypad_parent_conn.recv()
                 if key == '1':
                     pass
                 elif key == '2':
-                    oled.scroll_up()
+                    phone.scroll_up()
                 elif key == '3':
                     pass
                 elif key == '4':
-                    oled.go_parent()
+                    phone.go_parent()
                 elif key == '5':
-                    oled.go_child()
+                    phone.go_child()
                 elif key == '6':
-                    oled.go_child()
+                    phone.go_child()
                 elif key == '7':
                     pass
                 elif key == '8':
-                    oled.scroll_down()
+                    phone.scroll_down()
                 elif key == '9':
                     pass
                 elif key == '0':

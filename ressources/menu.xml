@@ -12,17 +12,17 @@
 
             <Favorites>
                 <Title>Call favorite contact</Title>
-                <Generator>gen_fav_contacts</Generator>
+                <Generator>gen_fav_contacts()</Generator>
             </Favorites>
 
             <Contacts>
                 <Title>Call contact</Title>
-                <Generator>gen_contacts</Generator>
+                <Generator>gen_contacts()</Generator>
             </Contacts>
 
             <Messages>
                 <Title>Vocal messages</Title>
-                <Generator>gen_voice_msg</Generator>
+                <Generator>fona.gen_voice_msg()</Generator>
             </Messages>
 
         </Submenu>
@@ -30,21 +30,22 @@
 
     <TextMessage>
         <Title>Text messages</Title>
-        <Generator>gen_msg</Generator>
+        <Generator>fona.gen_msg()</Generator>
     </TextMessage>
 
     <Email>
         <Title>Emails</Title>
+        <Generator>get_emails()</Generator>
     </Email>
 
     <Contacts>
         <Title>Contacts</Title>
-        <Generator>gen_contacts</Generator>
+        <Generator>gen_contacts()</Generator>
     </Contacts>
 
     <Agenda>
         <Title>Agenda</Title>
-        <Generator>gen_agenda</Generator>
+        <Generator>gen_agenda()</Generator>
     </Agenda>
 
     <Settings>

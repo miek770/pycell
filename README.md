@@ -6,6 +6,10 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 
 Problème : J'ai oublié de commander un régulateur de tension step-up dc-dc pour monter à 5V (requis par le Arietta G25). Par contre j'ai lu sur internet qu'on peut l'alimenter a 3.3V (meme le module Wifi) en enlevant une petite résistance pour désactiver le régulateur. Ça vaut la peine d'essayer!
 
+### 2014-10-08 20:01
+
+J'ai des problèmes avec l'encodage du texte lu du Fona (pour messages textes). L'arbre XML ne l'accepte pas, mais je ne parviens pas à le décoder ou à l'encoder correctement. Il va falloir que je fasse quelques recherches.
+
 ### 2014-10-07 22:05
 
 Je suis en train de développer le générateur pour les SMS, mais ce n'est pas fini. Par contre je crois que ma méthode d'extraction de l'information va fonctionner quel que soit le contenu du message texte, sauf naturellement si celui-ci contient la chaîne de contrôle. Ça ne me semble pas être un problème très plausible étant donné l'état de prototype, mais c'est clair qu'à grande échelle ça ne serait pas sécuritaire...

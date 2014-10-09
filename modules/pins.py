@@ -103,10 +103,10 @@ pins['P9_42'] = None
 #ADC.setup()
 
 #===============================================================================
-# Fonction :    set_low(pin, args='')
+# Fonction :    set_low(pin, args=None)
 # Description : Regle la pin digitale a 0V.
 #===============================================================================
-def set_low(pin, args=''):
+def set_low(pin, args=None):
     # Vérifie si la pin est configurée en sortie
     if pins[pin] == 'out':
         GPIO.output(pin, GPIO.LOW)
@@ -118,10 +118,10 @@ def set_low(pin, args=''):
         msg('Erreur : ' + pin + ' n\'est pas configurée correctement.', args)
 
 #===============================================================================
-# Fonction :    set_high(pin, args='')
+# Fonction :    set_high(pin, args=None)
 # Description : Regle la pin digitale a 3.3V.
 #===============================================================================
-def set_high(pin, args=''):
+def set_high(pin, args=None):
     # Vérifie si la pin est configurée en sortie
     if pins[pin] == 'out':
         GPIO.output(pin, GPIO.HIGH)
@@ -133,10 +133,10 @@ def set_high(pin, args=''):
         msg('Erreur : ' + pin + ' n\'est pas configurée correctement.', args)
 
 #===============================================================================
-# Fonction :    set_output(pin, args='')
+# Fonction :    set_output(pin, args=None)
 # Description : Configure la pin en mode sortie.
 #===============================================================================
-def set_output(pin, args=''):
+def set_output(pin, args=None):
     GPIO.setup(pin, GPIO.OUT)
     pins[pin] = 'out'
 
@@ -144,29 +144,29 @@ def set_output(pin, args=''):
     set_high(pin, args)
 
 #===============================================================================
-# Fonction :    set_input(pin, args='')
+# Fonction :    set_input(pin, args=None)
 # Description : Configure la pin en mode entrée.
 #===============================================================================
-def set_input(pin, args=''):
+def set_input(pin, args=None):
     GPIO.setup(pin, GPIO.IN)
     pins[pin] = 'in'
 
 #===============================================================================
-# Fonction :    get_input(pin, args='')
+# Fonction :    get_input(pin, args=None)
 # Description : Lit la valeur de la pin.
 #===============================================================================
-def get_input(pin, args=''):
+def get_input(pin, args=None):
     if GPIO.input(pin):
         return True
     else:
         return False
 
 #===============================================================================
-# Fonction :    get_adc(pin, args='')
+# Fonction :    get_adc(pin, args=None)
 # Description : Retourne une valeur entre 0 et 1 correspondant à une lecture
 #               entre 0 et 3,3V.
 #===============================================================================
-def get_adc(pin, args=''):
+def get_adc(pin, args=None):
     ADC.read(pin)
     reading = ADC.read(pin)
     return reading
@@ -178,10 +178,10 @@ def get_adc(pin, args=''):
 #               de commande. On ne devrait jamais utiliser directement 'print'
 #               et 'logging.log' dans le reste du programme, toujours 'msg'.
 #===============================================================================
-def msg(msg, args, lvl=logging.INFO):
-    if args.verbose:
+def msg(msg, args=None, lvl=logging.INFO):
+    if args is None or args.verbose:
         print str(msg)
 
-    if args.logfile:
+    elif args.logfile:
         logging.log(lvl, str(msg))
 
