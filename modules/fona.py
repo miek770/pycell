@@ -77,6 +77,12 @@ class Fona:
     # Commandes de base et configuration
     #======================================================
 
+    def turn_off(self):
+        msg('Fermeture du module Fona...', self.args)
+        set_low(self.power_key, self.args)
+        sleep(2)
+        set_high(self.power_key, self.args)
+
     def write(self, string, delay=0.05):
         self.ser.write('{}\n'.format(string))
         sleep(delay)
@@ -142,11 +148,12 @@ class Fona:
             return False
 
     def read_sms(self, id):
-        msg = self.write('AT+CMGR={0}'.format(int(id))).split('\r\n+CMGR: ')
+        sms = self.write('AT+CMGR={0}'.format(int(id))).split('\r\n+CMGR: ')
+        msg('[Debug] SMS : {}'.format(sms), self.args)
 
         index = int(id)
 
-        (a, b) = msg[1].split(',', 1)
+        (a, b) = sms[1].split(',', 1)
         status = a.strip('"')
 
         (a, b) = b.split(',', 1)
@@ -224,7 +231,7 @@ class Fona:
             nom = 'sms{}'.format(m.index)
             titre = '{:%y%m%d %H:%M} - {}'.format(m.when, m.number)
             action = 'Generator'
-            commande = 'show("{}")'.format(m.message)
+            commande = u'show("{}")'.format(m.message)
 
             menus.append((nom, titre, action, commande))
 

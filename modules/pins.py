@@ -180,8 +180,8 @@ def get_adc(pin, args=None):
 #===============================================================================
 def msg(msg, args=None, lvl=logging.INFO):
     if args is None or args.verbose:
-        print str(msg)
+        print msg
 
     elif args.logfile:
-        logging.log(lvl, str(msg))
+        logging.log(lvl, msg)
 

@@ -46,7 +46,7 @@ class Phone:
 
     # Initialisation
     #================
-    def __init__(self, args, menufile='ressources/menu.xml'):
+    def __init__(self, args=None, menufile='ressources/menu.xml'):
         self.args = args
 
         RST = 'P9_13'
@@ -112,6 +112,8 @@ class Phone:
             self.menu.remove(self.menu[self.cursor].find('Submenu'))
         except TypeError:
             pass
+        except ValueError:
+            pass
 
         # Popule le nouveau sous-menu
         etree.SubElement(self.menu[self.cursor], 'Submenu')
@@ -123,7 +125,7 @@ class Phone:
 
             if menu[2] is not None and menu[3] is not None:
                 etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
-                msg('[Debug] {}, {}'.format(menu[2], menu[3]), self.args)
+                msg(u'[Debug] {}, {}'.format(menu[2], menu[3]), self.args)
                 self.menu[self.cursor].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
     def go_child(self):
@@ -201,7 +203,7 @@ class Phone:
         line_width = 0
 
         for word in words:
-            word_width = font.getsize(word)[0]
+            word_width = self.font.getsize(word)[0]
 
             if line_width + word_width <= self.disp.width:
                 split_msg[current_line] += word
@@ -213,7 +215,7 @@ class Phone:
                 line_width = 0
 
                 for car in word:
-                    car_width = font.getsize(car)[0]
+                    car_width = self.font.getsize(car)[0]
 
                     if line_width + car_width <= self.disp.width:
                         split_msg[current_line] += car
