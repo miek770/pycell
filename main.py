@@ -328,7 +328,11 @@ def main():
                 elif key == '0':
                     pass
                 elif key == '*':
-                    pass
+                    phone.keypad_sub.terminate()
+                    phone.fona.turn_off()
+                    phone.disp.clear()
+                    phone.disp.display()
+                    sys.exit()
                 elif key == '#':
                     pass
  
