@@ -61,7 +61,7 @@ class Fona:
         if not self.pwr:
             msg('Demarrage du module Fona...', self.args)
             set_low(self.power_key, self.args)
-            sleep(2.2)
+            sleep(2)
             set_high(self.power_key, self.args)
 
         msg('Power Status: ' + str(self.pwr), self.args)
@@ -86,14 +86,14 @@ class Fona:
     def write(self, string, delay=0.05):
         self.ser.write('{}\n'.format(string))
         sleep(delay)
-        return self.ser.read(self.ser.inWaiting())
+        return self.read(self.ser.inWaiting())
 
     def read(self, l=False):
-        if self.new_data():
-            if l<= self.ser.inWaiting():
-                return self.ser.read(l)
-            else:
-                return self.ser.read(self.ser.inWaiting())
+        msg = u''
+        while self.new_data():
+            msg += unicode(self.ser.read(self.ser.inWaiting()).decode('latin-1'))
+            sleep(0.05)
+        return msg
 
     def new_data(self):
         if self.ser.inWaiting():
@@ -101,7 +101,7 @@ class Fona:
         else:
             return False
 
-    def get_config(self, delay=0.3):
+    def get_config(self):
         return self.write('AT&V')
 
     def text_mode(self):
@@ -135,11 +135,11 @@ class Fona:
         sleep(0.05)
         self.ser.write('{0}{1}'.format(msg, chr(26)))
         sleep(0.05)
-        return self.ser.read(self.ser.inWaiting())
+        return self.read(self.ser.inWaiting())
 
     def new_sms(self):
         if new_data():
-            r = self.ser.read(self.ser.inWaiting())
+            r = self.read(self.ser.inWaiting())
             if '+CMTI: "SM",' in r:
                 return r.split(',')[2]
             else:
@@ -165,7 +165,7 @@ class Fona:
         (a1, b) = b.split('"\r\n', 1)
         when = datetime.strptime('{} {}'.format(a, a1).strip('"')[:-3], '%y/%m/%d %H:%M:%S')
 
-        message = b[:-8].decode('latin-1')
+        message = b[:-8]
 
         return SMS(index, status, number, when, message)
 
@@ -200,7 +200,7 @@ class Fona:
             (a1, b) = b.split('"\r\n', 1)
             when = datetime.strptime('{} {}'.format(a, a1).strip('"')[:-3], '%y/%m/%d %H:%M:%S')
 
-            message = b[:-2].decode('latin-1')
+            message = b[:-2]
 
             liste_sms.append(SMS(index, status, number, when, message))
 
