@@ -61,7 +61,7 @@ class Fona:
         if not self.pwr:
             msg('Demarrage du module Fona...', self.args)
             set_low(self.power_key, self.args)
-            sleep(2)
+            sleep(2.2)
             set_high(self.power_key, self.args)
 
         msg('Power Status: ' + str(self.pwr), self.args)

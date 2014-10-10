@@ -75,7 +75,6 @@ class Phone:
 
         # Initialisation du module Fona
         self.fona = Fona(self.args)
-
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
 
     # Initialisation du menu
@@ -86,6 +85,7 @@ class Phone:
         self.menu = self.tree.getroot()
         self.buff = list()
         self.cursor = 0
+        self.previous_cursor = 0
 
         for m in self.menu:
             self.buff.append(m.find('Title').text)
@@ -106,6 +106,7 @@ class Phone:
 
         # Génère les sous-menus à partir du générateur
         submenus = eval('self.{}'.format(generator))
+        msg(u'[Debug] submenus = {}'.format(submenus), self.args)
 
         # Effacer les sous-menus actuels
         try:
@@ -118,6 +119,7 @@ class Phone:
         # Popule le nouveau sous-menu
         etree.SubElement(self.menu[self.cursor], 'Submenu')
         for menu in submenus:
+            msg(u'[Debug] menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]), self.args)
             etree.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
 
             etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
@@ -125,7 +127,6 @@ class Phone:
 
             if menu[2] is not None and menu[3] is not None:
                 etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
-                msg(u'[Debug] {}, {}'.format(menu[2], menu[3]), self.args)
                 self.menu[self.cursor].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
     def go_child(self):
@@ -133,6 +134,7 @@ class Phone:
             self.create_submenus(self.menu[self.cursor].find('Generator').text)
             self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()
+            self.previous_cursor = self.cursor
             self.cursor = 0
 
             for m in self.menu:
@@ -166,7 +168,7 @@ class Phone:
         try:
             self.menu = self.menu.find('..').find('..')
             self.buff = list()
-            self.cursor = 0
+            self.cursor = self.previous_cursor
 
             for m in self.menu:
                 self.buff.append(m.find('Title').text)

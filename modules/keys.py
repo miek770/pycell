@@ -41,21 +41,19 @@ class keypad:
 
         return None
 
-    def loop(self, f=0.01, d=0.2):
-        last = None
-        lasttime = 0.0
+def loop(conn, f=0.01, d=0.2):
+    k = keypad()
+    last = None
+    lasttime = 0.0
 
-        while True:
-            r = self.read()
+    while True:
+        r = k.read()
 
-            if r:
-                if r != last or time() > lasttime + d:
-                    last = r
-                    lasttime = time()
-                    print r
+        if r:
+            if r != last or time() > lasttime + d:
+                last = r
+                lasttime = time()
+                conn.send(r)
 
-            sleep(f)
-
-if __name__ == '__main__':
-    keypad().loop()
+        sleep(f)
 
