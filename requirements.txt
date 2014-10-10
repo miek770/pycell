@@ -13,3 +13,4 @@ spidev==2.0
 urwid==1.0.1
 wicd==1.7.2.4
 wsgiref==0.1.2
+textdata==1.0.2

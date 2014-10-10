@@ -19,7 +19,7 @@ class SMS:
         self.status = status
         self.number = number
         self.when = when
-        self.message = message
+        self.message = unicode(message)
 
 #===============================================================================
 # Classe :      Fona
@@ -231,7 +231,7 @@ class Fona:
             nom = 'sms{}'.format(m.index)
             titre = '{:%y%m%d %H:%M} - {}'.format(m.when, m.number)
             action = 'Generator'
-            commande = u'show("{}")'.format(m.message)
+            commande = u'show("""{}""")'.format(m.message)
 
             menus.append((nom, titre, action, commande))
 

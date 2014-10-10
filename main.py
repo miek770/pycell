@@ -105,7 +105,8 @@ class Phone:
     def create_submenus(self, generator):
 
         # Génère les sous-menus à partir du générateur
-        submenus = eval('self.{}'.format(generator))
+        msg(u'[Debug] générateur = {}'.format(generator), self.args)
+        submenus = eval(u'self.{}'.format(generator))
         msg(u'[Debug] submenus = {}'.format(submenus), self.args)
 
         # Effacer les sous-menus actuels, si existants
@@ -118,8 +119,9 @@ class Phone:
             msg(u'[Debug] menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]), self.args)
             etree.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
 
-            etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
-            self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
+            if menu[1] is not None:
+                etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
+                self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
 
             if menu[2] is not None and menu[3] is not None:
                 etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
@@ -136,7 +138,7 @@ class Phone:
 
             for m in self.menu:
                 try:
-                    self.buff.append(m.find('Title').text)
+                    self.buff.append(unicode(m.find('Title').text))
                 except AttributeError:
                     msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
 
@@ -149,7 +151,7 @@ class Phone:
 
             for m in self.menu:
                 try:
-                    self.buff.append(m.find('Title').text)
+                    self.buff.append(unicode(m.find('Title').text))
                 except AttributeError:
                     msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
 
@@ -185,9 +187,9 @@ class Phone:
         for l in range(self.cursor, len(self.buff)):
             if i < self.maxlines:
                 if i == 0:
-                    draw.text((0, 10*i), '> {}'.format(self.buff[l]), font=self.font, fill=255)
+                    draw.text((0, 10*i), u'> {}'.format(self.buff[l]), font=self.font, fill=255)
                 else:
-                    draw.text((0, 10*i), self.buff[l], font=self.font, fill=255)
+                    draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
                 i += 1
 
         # Display image.
@@ -195,47 +197,67 @@ class Phone:
         self.disp.display()
 
     def show(self, message):
-        words = message.split(' ')
+        print message
+        print message.decode('utf-8')
+        print unicode(message.decode('utf-8'))
+        message = message.decode('utf-8')
+        msg(u'[Debug] message = {}'.format(message), self.args)
+        words = message.split()
 
-        split_msg = ['']
+        split_msg = [u'']
         current_line = 0
         line_width = 0
+        space_width = self.font.getsize(' ')[0]
 
+        # Pour chaque mot du message...
         for word in words:
             word_width = self.font.getsize(word)[0]
 
+            # Si le mot entre dans la ligne actuelle...
             if line_width + word_width <= self.disp.width:
                 split_msg[current_line] += word
                 line_width += word_width
 
+            # Sinon, si le mot n'entre pas dans un ligne vide...
             elif word_width > self.disp.width:
                 current_line += 1
-                split_msg.append([''])
+                split_msg.append([u''])
                 line_width = 0
 
+                # Pour chaque caractère du mot...
                 for car in word:
                     car_width = self.font.getsize(car)[0]
 
+                    # Si le caractère entre dans la ligne actuelle...
                     if line_width + car_width <= self.disp.width:
                         split_msg[current_line] += car
                         line_width += car_width
 
+                    # Si le caractère n'entre pas dans la ligne actuelle...
                     else:
                         current_line +=1
-                        split_msg.append([''])
+                        split_msg.append([u''])
                         split_msg[current_line] += car
                         line_width = car_width
 
+            # Si le mot entre dans une nouvelle ligne vide...
             else:
                 current_line += 1
-                split_msg.append([''])
+                split_msg.append([u''])
                 split_msg[current_line] += word
                 line_width = word_width
+
+            # Ajoute un espace après chaque mot.
+            if line_width + space_width <= self.disp.width:
+                split_msg[current_line] += u' '
+                line_width += space_width
 
         menu = list()
 
         for line in split_msg:
-            menu.append((split_msg.index(line), line, None, None))
+            menu.append((u'line' + unicode(split_msg.index(line)), line, None, None))
+
+        return menu
 
     def scroll_down(self):
         if self.cursor < len(self.buff) - 1:
