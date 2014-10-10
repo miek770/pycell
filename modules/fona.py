@@ -148,7 +148,7 @@ class Fona:
             return False
 
     def read_sms(self, id):
-        sms = self.write('AT+CMGR={0}'.format(int(id))).split('\r\n+CMGR: ')
+        sms = self.write('AT+CMGR={0}'.format(int(id))).split('+CMGR: ')
         msg('[Debug] SMS : {}'.format(sms), self.args)
 
         index = int(id)
@@ -181,7 +181,7 @@ class Fona:
 
         liste_sms = list()
 
-        msg = self.write('AT+CMGL="ALL"', delay=0.3).split('\r\n+CMGL: ')
+        msg = self.write('AT+CMGL="ALL"', delay=0.3).split('+CMGL: ')
         msg.pop(0)
 
         for m in msg:

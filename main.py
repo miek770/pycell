@@ -197,10 +197,8 @@ class Phone:
         self.disp.display()
 
     def show(self, message):
-        print message
-        print message.decode('utf-8')
-        print unicode(message.decode('utf-8'))
-        message = message.decode('utf-8')
+        if message.__class__ != unicode:
+            message = message.decode('utf-8')
         msg(u'[Debug] message = {}'.format(message), self.args)
         words = message.split()
 
@@ -221,7 +219,7 @@ class Phone:
             # Sinon, si le mot n'entre pas dans un ligne vide...
             elif word_width > self.disp.width:
                 current_line += 1
-                split_msg.append([u''])
+                split_msg.append(u'')
                 line_width = 0
 
                 # Pour chaque caractère du mot...
@@ -236,14 +234,14 @@ class Phone:
                     # Si le caractère n'entre pas dans la ligne actuelle...
                     else:
                         current_line +=1
-                        split_msg.append([u''])
+                        split_msg.append(u'')
                         split_msg[current_line] += car
                         line_width = car_width
 
             # Si le mot entre dans une nouvelle ligne vide...
             else:
                 current_line += 1
-                split_msg.append([u''])
+                split_msg.append(u'')
                 split_msg[current_line] += word
                 line_width = word_width
 
