@@ -241,10 +241,16 @@ class Phone:
         if self.cursor < len(self.buff) - 1:
             self.cursor += 1
             self.refresh()
+        else:
+            self.cursor = 0
+            self.refresh()
 
     def scroll_up(self):
         if self.cursor > 0:
             self.cursor -= 1
+            self.refresh()
+        else:
+            self.cursor = len(self.buff) - 1
             self.refresh()
 
 #===============================================================================
