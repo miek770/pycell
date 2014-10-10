@@ -108,13 +108,9 @@ class Phone:
         submenus = eval('self.{}'.format(generator))
         msg(u'[Debug] submenus = {}'.format(submenus), self.args)
 
-        # Effacer les sous-menus actuels
-        try:
-            self.menu.remove(self.menu[self.cursor].find('Submenu'))
-        except TypeError:
-            pass
-        except ValueError:
-            pass
+        # Effacer les sous-menus actuels, si existants
+        if self.menu[self.cursor].find('Submenu') is not None:
+            etree.strip_elements(self.menu[self.cursor], 'Submenu')
 
         # Popule le nouveau sous-menu
         etree.SubElement(self.menu[self.cursor], 'Submenu')
@@ -131,6 +127,7 @@ class Phone:
 
     def go_child(self):
         if self.menu[self.cursor].find('Generator') is not None:
+            msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor].find('Title').text), self.args)
             self.create_submenus(self.menu[self.cursor].find('Generator').text)
             self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()
