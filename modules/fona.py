@@ -63,16 +63,23 @@ class Fona:
             set_low(self.power_key, self.args)
             sleep(2)
             set_high(self.power_key, self.args)
+            sleep(2)
 
         msg('Power Status: ' + str(self.pwr), self.args)
         #msg('Network Status: ' + str(self.ntk), self.args)
         msg('Ring Indicator: ' + str(self.rng), self.args)
 
-        # Mode texte pour les SMS
-        self.text_mode()
+        # Configuration générale
+        self.set_echo(False)
+        self.set_clock(when=datetime.now(), delta='-16')
 
-        # Désactive l'écho
-        self.echo_off()
+        # Configuration des SMS
+        self.set_text_mode(True)
+        self.set_force_ascii(False)
+        self.set_encoding(encoding='8859-1')
+
+        # Active le son sur le speaker (et non le casque d'écoute)
+        self.set_audio_channel(1)
 
     # Commandes de base et configuration
     #======================================================
@@ -82,6 +89,9 @@ class Fona:
         set_low(self.power_key, self.args)
         sleep(2)
         set_high(self.power_key, self.args)
+
+    def power_off(self):
+        self.turn_off()
 
     def write(self, string, delay=0.05):
         self.ser.write('{}\n'.format(string))
@@ -104,14 +114,17 @@ class Fona:
     def get_config(self):
         return self.write('AT&V')
 
-    def text_mode(self):
-        return self.write('AT+CMGF=1')
+    def set_text_mode(self, mode=True):
+        if mode:
+            return self.write('AT+CMGF=1')
+        else:
+            return self.write('AT+CMGF=0')
 
-    def echo_off(self):
-        return self.write('ATE0')
-
-    def echo_on(self):
-        return self.write('ATE1')
+    def set_echo(self, echo):
+        if echo:
+            return self.write('ATE1')
+        else:
+            return self.write('ATE0')
 
     def update_status(self):
         tmp = get_input(self.power_status, self.args)
@@ -127,8 +140,36 @@ class Fona:
             self.rng = tmp
             msg('Ring Indicator: ' + str(self.rng), self.args)
 
+    def get_battery(self):
+        return self.write('AT+CBC')
+
+    def get_provider(self):
+        return self.write('AT+CSPN?')
+
+    def get_clock(self):
+        return self.write('AT+CCLK?')
+
+    # delta est la différence avec GMT en quarts d'heure
+    def set_clock(self, when=datetime.now(), delta='-20'):
+        return self.write('AT+CCLK="{:%y/%m/%d,%H:%M:%S}{}"'.format(when, delta))
+
     # Commandes liées aux SMS
     #==================================
+
+    def get_force_ascii(self):
+        return self.write('AT+CMGHEX?')
+
+    def set_force_ascii(self, force):
+        if force:
+            return self.write('AT+CMGHEX=0')
+        else:
+            return self.write('AT+CMGHEX=1')
+
+    def get_encoding(self):
+        return self.write('AT+CSCS?')
+
+    def set_encoding(self, encoding='GSM'):
+        return self.write('AT+CSCS="{}"'.format(encoding))
 
     def send_sms(self, num, msg):
         self.ser.write('AT+CMGS="{0}"\r'.format(num))
@@ -209,8 +250,8 @@ class Fona:
     # Commandes liées à la voix
     #===========================
 
-    def call(self, num):
-        return self.write('ATD{0};'.format(num))
+    def call(self, number):
+        return self.write('ATD{0};'.format(number))
 
     def hang_up(self):
         return self.write('ATH')
@@ -220,6 +261,33 @@ class Fona:
 
     def answer(self):
         return self.write('ATA')
+
+    def get_volume(self):
+        return self.write('AT+CLVL?')
+
+    def set_volume(self, volume):
+        return self.write('AT+CLVL={}'.format(volume))
+
+    def get_mute(self):
+        return self.write('AT+CMUT?')
+
+    def set_mute(self, mute):
+        if mute:
+            return self.write('AT+CMUT=1')
+        else:
+            return self.write('AT+CMUT=0')
+
+    def get_mic_gain(self):
+        return self.write('AT+CMIC?')
+
+    def set_mic_gain(self, channel, gain):
+        return self.write('AT+CMIC={},{}'.format(channel, gain))
+
+    def get_audio_channel(self):
+        return self.write('AT+CHFA?')
+
+    def set_audio_channel(self, channel):
+        return self.write('AT+CHFA={}'.format(channel))
 
     # Générateurs (associés à ../ressources/menu.xml)
     #==============================================
