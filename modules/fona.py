@@ -93,9 +93,9 @@ class Fona:
     def power_off(self):
         self.turn_off()
 
-    def write(self, string, delay=0.05):
+    def write(self, string):
         self.ser.write('{}\n'.format(string))
-        sleep(delay)
+        sleep(0.1)
         return self.read(self.ser.inWaiting())
 
     def read(self, l=False):
