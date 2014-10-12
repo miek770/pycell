@@ -161,7 +161,7 @@ class Phone:
             msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
 
         else:
-            msg('[Debug] Aucune action de définie pour {} :\n\n{}'.format(self.menu[self.cursor].tag, self.menu[self.cursor].dump()), self.args)
+            msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag, ), self.args)
         
     def go_parent(self):
         try:
