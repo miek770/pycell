@@ -72,6 +72,7 @@ class Fona:
         # Configuration générale
         self.set_echo(False)
         self.set_clock(when=datetime.now(), delta='-16')
+        self.set_buzzer(True)
 
         # Configuration des SMS
         self.set_text_mode(True)
@@ -80,6 +81,10 @@ class Fona:
 
         # Active le son sur le speaker (et non le casque d'écoute)
         self.set_audio_channel(1)
+        self.set_volume(20)
+        self.set_mic(True)
+        self.set_mic_gain(1,10)
+        self.set_mic_bias(True)
 
     # Commandes de base et configuration
     #======================================================
@@ -113,6 +118,9 @@ class Fona:
 
     def get_config(self):
         return self.write('AT&V')
+
+    def get_text_mode(self):
+        return self.write('AT+CMGF?')
 
     def set_text_mode(self, mode=True):
         if mode:
@@ -152,6 +160,21 @@ class Fona:
     # delta est la différence avec GMT en quarts d'heure
     def set_clock(self, when=datetime.now(), delta='-20'):
         return self.write('AT+CCLK="{:%y/%m/%d,%H:%M:%S}{}"'.format(when, delta))
+
+    def play_tone(self, tone, duration):
+        return self.write('AT+STTONE=1,{},{}'.format(tone, duration))
+
+    def stop_tone(self):
+        return self.write('AT+STTONE=0')
+
+    def get_buzzer(self):
+        return self.write('AT+CBUZZERRING?')
+
+    def set_buzzer(self, state):
+        if state:
+            return self.write('AT+CBUZZERRING=1')
+        else:
+            return self.write('AT+CBUZZERRING=0')
 
     # Commandes liées aux SMS
     #==================================
@@ -222,7 +245,7 @@ class Fona:
 
         liste_sms = list()
 
-        msg = self.write('AT+CMGL="ALL"', delay=0.3).split('+CMGL: ')
+        msg = self.write('AT+CMGL="ALL"').split('+CMGL: ')
         msg.pop(0)
 
         for m in msg:
@@ -288,6 +311,24 @@ class Fona:
 
     def set_audio_channel(self, channel):
         return self.write('AT+CHFA={}'.format(channel))
+
+    def get_mic(self):
+        return self.write('AT+CEXTERNTONE?')
+
+    def set_mic(self, state):
+        if state:
+            return self.write('AT+CEXTERNTONE=1')
+        else:
+            return self.write('AT+CEXTERNTONE=0')
+
+    def get_mic_bias(self):
+        return self.write('AT+CMICBIAS?')
+
+    def set_mic_bias(self, state):
+        if state:
+            return self.write('AT+CMICBIAS=1')
+        else:
+            return self.write('AT+CMICBIAS=0')
 
     # Générateurs (associés à ../ressources/menu.xml)
     #==============================================
