@@ -26,14 +26,12 @@ from multiprocessing import Process, Pipe
 import logging
 import time
 
-import Adafruit_GPIO.SPI as SPI
-import Adafruit_SSD1306
-
 import Image
 import ImageDraw
 import ImageFont
 from modules import keys
 from modules.fona import Fona
+from modules.SSD1306 import SSD1306
 
 from lxml import etree
 
@@ -95,13 +93,12 @@ class Phone:
     def __init__(self, args=None, menufile='ressources/menu.xml'):
         self.args = args
 
-        RST = 'P9_13'
-        DC = 'P9_14'
-        SPI_PORT = 1
-        SPI_DEVICE = 0
+        RST = 'J4.12'
+        DC = 'J4.14'
+        CS = 'J4.11'
 
         # 128x64 display with hardware SPI:
-        self.disp = Adafruit_SSD1306.SSD1306_128_64(rst=RST, dc=DC, spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE, max_speed_hz=8000000))
+        self.disp = SSD1306(rst=RST, dc=DC, cs=CS)
 
         # Initialize library.
         self.disp.begin()
