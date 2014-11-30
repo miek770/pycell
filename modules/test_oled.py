@@ -1,8 +1,8 @@
-import time
+import time, sys
 from SSD1306 import SSD1306
-import Image
-import ImageDraw
-import ImageFont
+from PIL import Image, ImageDraw, ImageFont
+
+sys.settrace
 
 disp = SSD1306(rst='J4.12', dc='J4.14', cs='J4.11')
 
@@ -48,7 +48,8 @@ draw.line((x, top, x+shape_width, bottom), fill=255)
 x += shape_width+padding
 
 # Load default font.
-font = ImageFont.load_default()
+#font = ImageFont.load_default()
+font = ImageFont.truetype('../ressources/Minecraftia-Regular.ttf', 8)
 
 # Write two lines of text.
 draw.text((x, top),    'Hello',  font=font, fill=255)
