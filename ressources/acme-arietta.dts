@@ -103,18 +103,17 @@
 				pinctrl-0 = <&pinctrl_usart2>;
 			};
 
-			spi0: spi@f0000000 {
-				status = "okay";
-				cs-gpios = <&pioA 14 0>, <0>, <0>, <0>;
+            spi1: spi@f0004000 {
+                status = "okay";
+                cs-gpios = <&pioA 8 0>, <0>, <0>, <0>;
 
-				device@0 {
-					compatible = "spidev";
-					// spi-max-frequency = <50000000>;  // 50 MHz
-					spi-max-frequency = <5000000>;	    // 5 MHz
-					reg = <0>;
-				};
-
-			};
+                device@0 {
+                    compatible = "spidev";
+                    spi-max-frequency = <50000000>;  // 50 MHz
+                    // spi-max-frequency = <5000000>;      // 5 MHz
+                    reg = <0>;
+                };
+            };
 
 			usb2: gadget@f803c000 {
 				status = "okay";
