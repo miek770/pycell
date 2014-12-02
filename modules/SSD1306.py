@@ -1,4 +1,6 @@
-# This is an extract from https://github.com/adafruit/Adafruit_Python_SSD1306 which is meant to be used for the Arietta G25 from Acmesystems over SPI. The code will use https://github.com/tanzilli/ablib instead of Adafruit's IO librairies and skip the parts about I2C.
+# This is an extract from https://github.com/adafruit/Adafruit_Python_SSD1306
+# which is meant to be used for the Arietta G25 from Acmesystems over SPI.
+# The code will use https://github.com/tanzilli/ablib instead of Adafruit's IO librairies and skip the parts about I2C.
 #
 # It is not meant to be merged back into Adafruit's base project.
 #
@@ -37,7 +39,6 @@ import struct
 from ctypes import addressof, create_string_buffer, sizeof, string_at
 from fcntl import ioctl
 from spi_ctypes import *
-
 
 # Constants
 SSD1306_SETCONTRAST = 0x81
@@ -81,7 +82,7 @@ class spibus():
 
     fd=None
     write_buffer = create_string_buffer(8192)
-    read_buffer = create_string_buffer(50)
+    read_buffer = create_string_buffer(8192)
 
     ioctl_arg = spi_ioc_transfer(tx_buf=addressof(write_buffer),
                                  rx_buf=addressof(read_buffer),
@@ -91,23 +92,23 @@ class spibus():
                                  bits_per_word=8,
                                  cs_change = 0)
 
-    def __init__(self, device):
+    def __init__(self, device, cs):
+        self._cs = Pin(cs, 'HIGH')
         self.fd = posix.open(device, posix.O_RDWR)
         ioctl(self.fd, SPI_IOC_RD_MODE, " ")
         ioctl(self.fd, SPI_IOC_WR_MODE, struct.pack('I',0))
 
     def send(self, len):
+        self._cs.low()
         self.ioctl_arg.len=len
         ioctl(self.fd, SPI_IOC_MESSAGE(1), addressof(self.ioctl_arg))
+        self._cs.high()
 
     def write(self, s):
-        #print s
         i = 0
         for c in s:
-            #print c
             if c.__class__ is not str:
                 c = chr(c)
-            #print c
             self.write_buffer[i] = c
             i += 1
         self.send(len(s))
@@ -124,11 +125,10 @@ class SSD1306():
         # Setup reset, DC and CS pins
         self._rst = Pin(rst, 'HIGH')
         self._dc = Pin(dc, 'HIGH')
-        self._cs = Pin(cs, 'LOW') # Always low
 
         # Handle hardware SPI
         self._log.debug('Using hardware SPI')
-        self._spi = spibus(spi)
+        self._spi = spibus(spi, cs)
 
     def _initialize(self):
         # 128x64 pixel specific initialization.
@@ -167,13 +167,13 @@ class SSD1306():
         self.command(SSD1306_NORMALDISPLAY)                 # 0xA6
 
     def command(self, c):
-        """Send command byte to display."""
+        """Send command byte to display. D/C low = Command."""
         # SPI write.
         self._dc.low()
         self._spi.write([c])
 
     def data(self, c):
-        """Send byte of data to display."""
+        """Send byte of data to display. D/C high = Data."""
         self._dc.high()
         self._spi.write([c])
 

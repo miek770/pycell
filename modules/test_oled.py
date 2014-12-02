@@ -2,7 +2,10 @@ import time, sys
 from SSD1306 import SSD1306
 from PIL import Image, ImageDraw, ImageFont
 
-sys.settrace
+#sys.settrace
+# Lorsque j'execute le programme j'ai une segmentation fault. Lorsque
+# j'execute les commandes une par une j'ai une segfault en quittant
+# (avec exit()). Rien ne s'affiche sur l'ecran.
 
 disp = SSD1306(rst='J4.12', dc='J4.14', cs='J4.11')
 
@@ -59,3 +62,4 @@ draw.text((x, top+20), 'World!', font=font, fill=255)
 disp.image(image)
 disp.display()
 
+print "Done!"
