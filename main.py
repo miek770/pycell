@@ -26,9 +26,7 @@ from multiprocessing import Process, Pipe
 import logging
 import time
 
-import Image
-import ImageDraw
-import ImageFont
+from PIL import Image, ImageDraw, ImageFont
 from modules import keys
 from modules.fona import Fona
 from modules.SSD1306 import SSD1306
