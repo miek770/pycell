@@ -52,4 +52,9 @@
         <Title>Settings</Title>
     </Settings>
 
+    <Shutdown>
+        <Title>Shutdown</Title>
+        <Exec>shutdown</Exec>
+    </Shutdown>
+
 </MainMenu>

@@ -1,11 +1,48 @@
+#-*- coding: utf-8 -*-
+
 import time, sys
+from datetime import datetime
 from SSD1306 import SSD1306
 from PIL import Image, ImageDraw, ImageFont
 
-#sys.settrace
-# Lorsque j'execute le programme j'ai une segmentation fault. Lorsque
-# j'execute les commandes une par une j'ai une segfault en quittant
-# (avec exit()). Rien ne s'affiche sur l'ecran.
+batt = 0.7
+
+def popup(message, image, linelength=20, padding=3, font=ImageFont.load_default()):
+
+    from textwrap import wrap
+
+    width, heigh = image.size
+    draw = ImageDraw.Draw(image)
+    message = wrap(message, width=linelength)
+
+    largest = 0
+    highest = 0
+    for l in message:
+        w = font.getsize(l)
+        if w[0] > largest:
+            largest = w[0]
+        if w[1] > highest:
+            highest = w[1]
+
+    draw.rectangle(((width - largest)/2 - padding,
+                    (height - len(message)*highest)/2 - padding,
+                    (width + largest - 1)/2 + padding,
+                    (height + len(message)*highest - 1)/2 + padding
+                   ),
+                   outline=255,
+                   fill=0)
+
+    line = 0
+    for l in message:
+        draw.text(((width - largest)/2,
+                   (height - len(message)*highest)/2 + line*highest
+                  ),
+                  l,
+                  font=font,
+                  fill=255)
+        line += 1
+
+    return image
 
 disp = SSD1306(rst='J4.12', dc='J4.14', cs='J4.11')
 
@@ -57,6 +94,45 @@ font = ImageFont.truetype('../ressources/Minecraftia-Regular.ttf', 8)
 # Write two lines of text.
 draw.text((x, top),    'Hello',  font=font, fill=255)
 draw.text((x, top+20), 'World!', font=font, fill=255)
+
+# Indique la date / heure en haut à gauche
+#==========================================
+
+# Sur 1 ligne
+date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
+draw.text((0, 0), date, font=font, fill=255)
+
+# Indique le niveau de batterie en haut à droite
+#================================================
+batt_size = 13, 6
+
+# Enveloppe batterie
+draw.rectangle((width - (batt_size[0] - 1),
+                0,
+                width - 1,
+                batt_size[1] - 1
+               ),
+               outline=255,
+               fill=0)
+
+draw.rectangle((width-batt_size[0],
+                1,
+                width-batt_size[0],
+                batt_size[1] - 2
+               ),
+               outline=255,
+               fill=0)
+
+# Niveau de charge
+draw.rectangle((width-(batt_size[0] - 2),
+                1,
+                width-(batt_size[0] - 2) + batt*(batt_size[0] - 3),
+                batt_size[1] - 2
+               ),
+               outline=255,
+               fill=255)
+
+image = popup(u"Ceci est un test, qui fonctionne plutôt bien!", image, font=font)
 
 # Display image.
 disp.image(image)

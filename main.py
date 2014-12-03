@@ -21,10 +21,9 @@
 #  MA 02110-1301, USA.
 #
 
-import argparse, logging, sys
+import argparse, logging, sys, time, re
 from multiprocessing import Process, Pipe
-import logging
-import time
+from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
 from modules import keys
@@ -218,9 +217,6 @@ class Phone:
             msg('[Debug] Aucun menu parent pour {}'.format(self.menu.tag), self.args)
 
     def refresh(self):
-        # Create blank image for drawing.
-        # Make sure to create image with mode '1' for 1-bit color.
-
         image = Image.new('1', (self.disp.width, self.disp.height))
         draw = ImageDraw.Draw(image)
 
@@ -232,6 +228,43 @@ class Phone:
                 else:
                     draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
                 i += 1
+
+        # Display image.
+        self.disp.image(image)
+        self.disp.display()
+
+    def home(self):
+        image = Image.new('1', (self.disp.width, self.disp.height))
+        draw = ImageDraw.Draw(image)
+
+        # Indique la date / heure en haut à gauche
+        date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
+        draw.text((0, 0), date, font=self.font, fill=255)
+
+        # Indique le niveau de batterie en haut à droite
+        batt = float(re.search(u"CBC: 0,([0-9]{2,3}),[0-9]?", self.fona.get_battery()).group(1))/100
+        batt_size = 13, 6
+
+        # Enveloppe batterie
+        box = (self.disp.width-(batt_size[0]-1), 0, self.disp.width-1, batt_size[1]-1)
+        draw.rectangle(box,
+                       outline=255,
+                       fill=0)
+
+        box = (self.disp.width-batt_size[0], 1, self.disp.width-batt_size[0], batt_size[1]-2)
+        draw.rectangle(box,
+                       outline=255,
+                       fill=0)
+
+        # Niveau de charge
+        box = (self.disp.width-(batt_size[0]-2),
+               1,
+               self.disp.width-(batt_size[0] - 2) + batt*(batt_size[0] - 3),
+               batt_size[1] - 2)
+
+        draw.rectangle(box,
+                       outline=255,
+                       fill=255)
 
         # Display image.
         self.disp.image(image)
@@ -314,6 +347,13 @@ class Phone:
             self.cursor = len(self.buff) - 1
             self.refresh()
 
+    def shutdown(self):
+        self.keypad_sub.terminate()
+        self.fona.turn_off()
+        self.disp.clear()
+        self.disp.display()
+        sys.exit()
+
 #===============================================================================
 # Fonction :    main
 # Description : Routine principale
@@ -373,34 +413,44 @@ def main():
 
             if phone.keypad_parent_conn.poll():
                 key = phone.keypad_parent_conn.recv()
+
                 if key == '1':
                     pass
+
                 elif key == '2':
                     phone.scroll_up()
+
                 elif key == '3':
                     pass
+
                 elif key == '4':
                     phone.go_parent()
+
                 elif key == '5':
                     phone.go_child()
+
                 elif key == '6':
                     phone.go_child()
+
                 elif key == '7':
                     pass
+
                 elif key == '8':
                     phone.scroll_down()
+
                 elif key == '9':
                     pass
+                
                 elif key == '0':
                     pass
+
                 elif key == '*':
-                    phone.keypad_sub.terminate()
-                    phone.fona.turn_off()
-                    phone.disp.clear()
-                    phone.disp.display()
-                    sys.exit()
+                    phone.shutdown()
+
                 elif key == '#':
-                    pass
+                    phone.home()
+                    time.sleep(2)
+                    phone.refresh()
  
         # S'exécute toutes les 1s
         if count_1000ms == 1000:
