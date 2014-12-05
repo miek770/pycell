@@ -12,6 +12,7 @@ from PIL import Image, ImageDraw, ImageFont
 import keys
 from fona import Fona
 from SSD1306 import SSD1306
+from ablib import Pin
 
 from lxml import etree
 
@@ -72,35 +73,31 @@ class Phone:
     #================
     def __init__(self,
                  args=None,
-                 menufile='ressources/menu.xml',
+                 menufile="ressources/menu.xml",
                  ):
 
         self.args = args
 
-        RST = 'J4.12'
-        DC = 'J4.14'
-        CS = 'J4.11'
+        # Initialisation des boutons
+        self.but_ok = Pin("PC17", "INPUT") # À remplacer par J4.38
+        self.but_esc = Pin("J4.40", "INPUT")
+#        self.but_g25 = Pin("PC17", "INPUT")
 
-        # 128x64 display with hardware SPI:
-        self.disp = SSD1306(rst=RST, dc=DC, cs=CS)
-
-        # Initialize library.
+        # Initialisation du OLED
+        self.disp = SSD1306(rst="J4.12", dc="J4.14", cs="J4.11")
         self.disp.begin()
-
-        # Clear display.
-        self.disp.clear()
-        self.disp.display()
+        self.clear_display()
 
         # Initialisation du menu
         self.maxlines = 6
         self.menufile = menufile
 
-        # Initialize keypad
+        # Initialisation du clavier
         self.keypad_parent_conn, self.keypad_child_conn = Pipe()
         self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
         self.keypad_sub.start()
 
-        # Initialisation du module Fona
+        # Initialisation du Fona
         self.fona = Fona(self.args)
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
 
@@ -129,7 +126,7 @@ class Phone:
         for m in self.menu:
             self.buff.append(m.find('Title').text)
 
-        self.refresh()
+#        self.refresh()
 
     # Cette fonction crée des sous-menus à partir d'une liste de tuples bâtie ainsi :
     # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
@@ -325,11 +322,14 @@ class Phone:
             self.cursor = len(self.buff) - 1
             self.refresh()
 
+    def clear_display(self):
+        self.disp.clear()
+        self.disp.display()
+
     def shutdown(self):
         self.keypad_sub.terminate()
         self.fona.turn_off()
-        self.disp.clear()
-        self.disp.display()
+        self.clear_display()
         sys.exit()
 
 # Barre de notification
