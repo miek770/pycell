@@ -5,6 +5,7 @@
 
 import argparse, logging, sys, time, re
 from multiprocessing import Process, Pipe
+import subprocess as sub
 from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
@@ -130,7 +131,7 @@ class Phone:
 
         self.refresh()
 
-    # Cette fonction va devoir créer des sous-menus à partir d'une liste de tuples bâtie ainsi :
+    # Cette fonction crée des sous-menus à partir d'une liste de tuples bâtie ainsi :
     # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
     #
     #   Nom = Nom de l'élément (interne)
@@ -197,6 +198,7 @@ class Phone:
 
         elif self.menu[self.cursor].find('Exec') is not None:
             msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
+            eval(u'self.{}'.format(self.menu[self.cursor].find('Exec').text))
 
         else:
             msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag, ), self.args)
@@ -238,31 +240,6 @@ class Phone:
         # Indique la date / heure en haut à gauche
         date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
         draw.text((0, 0), date, font=self.font, fill=255)
-
-        # Indique le niveau de batterie en haut à droite
-        batt = float(re.search(u"CBC: 0,([0-9]{2,3}),[0-9]?", self.fona.get_battery()).group(1))/100
-        batt_size = 13, 6
-
-        # Enveloppe batterie
-        box = (self.disp.width-(batt_size[0]-1), 0, self.disp.width-1, batt_size[1]-1)
-        draw.rectangle(box,
-                       outline=255,
-                       fill=0)
-
-        box = (self.disp.width-batt_size[0], 1, self.disp.width-batt_size[0], batt_size[1]-2)
-        draw.rectangle(box,
-                       outline=255,
-                       fill=0)
-
-        # Niveau de charge
-        box = (self.disp.width-(batt_size[0]-2),
-               1,
-               self.disp.width-(batt_size[0] - 2) + batt*(batt_size[0] - 3),
-               batt_size[1] - 2)
-
-        draw.rectangle(box,
-                       outline=255,
-                       fill=255)
 
         # Affiche la barre des tâches
         image.paste(self.get_tskbr_image(), (0, image.size[1] - self.tskbr_size[1]))
@@ -358,13 +335,15 @@ class Phone:
 # Barre de notification
 #=======================
 
-    def draw_batt(self, image, offset=0, volt=70): # Corriger volt
+    def draw_batt(self, image, offset=0):
         batt_size = 13, 6
         draw = ImageDraw.Draw(image)
         width, height = image.size
 
         width -= offset
         offset += batt_size[0] + self.tskbr_padding
+
+        charge = float(re.search(u"CBC: 0,([0-9]{2,3}),[0-9]?", self.fona.get_battery()).group(1))/100
 
         # Enveloppe batterie
         draw.rectangle((width - (batt_size[0] - 1), 0, width - 1, batt_size[1] - 1),
@@ -376,11 +355,10 @@ class Phone:
                        fill=0)
 
         # Niveau de charge
-        draw.rectangle((width-(batt_size[0] - 2), 1, width-(batt_size[0] - 2) + volt*(batt_size[0] - 3)/100, batt_size[1] - 2),
+        draw.rectangle((width-(batt_size[0] - 2), 1, width-(batt_size[0] - 2) + charge*(batt_size[0] - 3), batt_size[1] - 2),
                        outline=255,
                        fill=255)
 
-        # 0% à 100%
         return image, offset
 
     def get_date(self):
@@ -389,7 +367,7 @@ class Phone:
     def get_time(self):
         return datetime.strftime(datetime.now(), "%H:%M")
 
-    def draw_wifi(self, image, offset=0, status=2): # Corriger status
+    def draw_wifi(self, image, offset=0):
         icon_size = 9, 6
         draw = ImageDraw.Draw(image)
         width, height = image.size
@@ -397,9 +375,17 @@ class Phone:
         width -= offset
         offset += icon_size[0] + self.tskbr_padding
 
+        try:
+            # 2 = Connected
+            if sub.check_output("iwconfig wlan0 | grep ESSID", shell=True):
+                status = 2
+            # 1 = On
+            else:
+                status = 1
         # 0 = Off
-        # 1 = On
-        # 2 = Connected
+        except sub.CalledProcessError:
+            status = 0
+
         p = [(4, 5),
              ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4)),
              ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4), (0, 2), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0), (6, 1), (7, 1), (8, 2)),
@@ -420,9 +406,15 @@ class Phone:
         width -= offset
         offset += icon_size[0] + self.tskbr_padding
 
-        # 0 = Off
-        # 1 = On
         # 2 = Connected
+        if self.fona.network_status.get():
+            status = 2
+        # 1 = On
+        elif self.fona.power_status.get():
+            status = 1
+        # 0 = Off
+        else:
+            status = 0
 
         rect = (width - icon_size[0], 4, width - icon_size[0] + 1, 5)
         draw.rectangle(rect, outline=255, fill=0)
@@ -437,7 +429,9 @@ class Phone:
 
         return image, offset
 
-    def draw_message(self, image, offset=0, status=True): # Corriger status
+    def draw_message(self, image, offset=0):
+
+        status = self.fona.new_sms()
 
         if not status:
             return image, offset
@@ -465,7 +459,9 @@ class Phone:
 
         return image, offset
 
-    def draw_call(self, image, offset=0, status=True): # Corriger status
+    def draw_call(self, image, offset=0):
+
+        status = self.fona.ring.get()
 
         if not status:
             return image, offset

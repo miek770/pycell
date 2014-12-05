@@ -54,7 +54,7 @@
 
     <Shutdown>
         <Title>Shutdown</Title>
-        <Exec>shutdown</Exec>
+        <Exec>shutdown()</Exec>
     </Shutdown>
 
 </MainMenu>
