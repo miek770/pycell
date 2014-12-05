@@ -4,6 +4,7 @@
 #  phone.py
 
 import argparse, logging, sys, time, re
+from multiprocessing import Process, Pipe
 from datetime import datetime
 
 from PIL import Image, ImageDraw, ImageFont
@@ -68,7 +69,11 @@ class Phone:
 
     # Initialisation
     #================
-    def __init__(self, args=None, menufile='ressources/menu.xml'):
+    def __init__(self,
+                 args=None,
+                 menufile='ressources/menu.xml',
+                 ):
+
         self.args = args
 
         RST = 'J4.12'
@@ -97,6 +102,18 @@ class Phone:
         # Initialisation du module Fona
         self.fona = Fona(self.args)
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
+
+        # Initialisation de la barre des tâches
+        self.tskbr_size = 128, 6 
+        self.tskbr_padding = 2
+
+        self.tskbr_batt = True
+        self.tskbr_date = True
+        self.tskbr_time = True
+        self.tskbr_wifi = True
+        self.tskbr_fona = True
+        self.tskbr_message = True
+        self.tskbr_call = True
 
     # Initialisation du menu
     #========================
@@ -247,6 +264,9 @@ class Phone:
                        outline=255,
                        fill=255)
 
+        # Affiche la barre des tâches
+        image.paste(self.get_tskbr_image(), (0, image.size[1] - self.tskbr_size[1]))
+
         # Display image.
         self.disp.image(image)
         self.disp.display()
@@ -335,4 +355,159 @@ class Phone:
         self.disp.display()
         sys.exit()
 
+# Barre de notification
+#=======================
+
+    def draw_batt(self, image, offset=0, volt=70): # Corriger volt
+        batt_size = 13, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += batt_size[0] + self.tskbr_padding
+
+        # Enveloppe batterie
+        draw.rectangle((width - (batt_size[0] - 1), 0, width - 1, batt_size[1] - 1),
+                       outline=255,
+                       fill=0)
+
+        draw.rectangle((width-batt_size[0], 1, width-batt_size[0], batt_size[1] - 2),
+                       outline=255,
+                       fill=0)
+
+        # Niveau de charge
+        draw.rectangle((width-(batt_size[0] - 2), 1, width-(batt_size[0] - 2) + volt*(batt_size[0] - 3)/100, batt_size[1] - 2),
+                       outline=255,
+                       fill=255)
+
+        # 0% à 100%
+        return image, offset
+
+    def get_date(self):
+        return datetime.strftime(datetime.now(), "%y%m%d")
+
+    def get_time(self):
+        return datetime.strftime(datetime.now(), "%H:%M")
+
+    def draw_wifi(self, image, offset=0, status=2): # Corriger status
+        icon_size = 9, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += icon_size[0] + self.tskbr_padding
+
+        # 0 = Off
+        # 1 = On
+        # 2 = Connected
+        p = [(4, 5),
+             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4)),
+             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4), (0, 2), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0), (6, 1), (7, 1), (8, 2)),
+             ]
+
+        # Décalage des points
+        points = tuple(map(lambda x: (width - icon_size[0] + x[0], x[1]), p[status]))
+
+        draw.point(points, fill=255)
+
+        return image, offset
+
+    def draw_fona(self, image, offset=0, status=2): # Corriger status
+        icon_size = 8, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += icon_size[0] + self.tskbr_padding
+
+        # 0 = Off
+        # 1 = On
+        # 2 = Connected
+
+        rect = (width - icon_size[0], 4, width - icon_size[0] + 1, 5)
+        draw.rectangle(rect, outline=255, fill=0)
+
+        if status > 0:
+            rect = (width - icon_size[0] + 3, 2, width - icon_size[0] + 4, 5)
+            draw.rectangle(rect, outline=255, fill=0)
+
+            if status > 1:
+                rect = (width - icon_size[0] + 6, 0, width - icon_size[0] + 7, 5)
+                draw.rectangle(rect, outline=255, fill=0)
+
+        return image, offset
+
+    def draw_message(self, image, offset=0, status=True): # Corriger status
+
+        if not status:
+            return image, offset
+
+        icon_size = 10, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += icon_size[0] + self.tskbr_padding
+
+        lines = ((width - icon_size[0] + 0, 0, width - icon_size[0] + 9, 0),
+                 (width - icon_size[0] + 2, 1, width - icon_size[0] + 7, 1),
+                 (width - icon_size[0] + 4, 2, width - icon_size[0] + 5, 2),
+                 (width - icon_size[0] + 0, 2, width - icon_size[0] + 1, 2),
+                 (width - icon_size[0] + 8, 2, width - icon_size[0] + 9, 2),
+                 (width - icon_size[0] + 0, 3, width - icon_size[0] + 3, 3),
+                 (width - icon_size[0] + 6, 3, width - icon_size[0] + 9, 3),
+                 (width - icon_size[0] + 0, 4, width - icon_size[0] + 9, 4),
+                 (width - icon_size[0] + 0, 5, width - icon_size[0] + 9, 5),
+                 )
+
+        for l in lines:
+            draw.line(l, fill=255)
+
+        return image, offset
+
+    def draw_call(self, image, offset=0, status=True): # Corriger status
+
+        if not status:
+            return image, offset
+
+        icon_size = 14, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += icon_size[0] + self.tskbr_padding
+
+        lines = ((width - icon_size[0] + 4, 0, width - icon_size[0] + 9, 0),
+                 (width - icon_size[0] + 2, 1, width - icon_size[0] + 11, 1),
+                 (width - icon_size[0] + 1, 2, width - icon_size[0] + 12, 2),
+                 (width - icon_size[0] + 0, 3, width - icon_size[0] + 3, 3),
+                 (width - icon_size[0] + 10, 3, width - icon_size[0] + 13, 3),
+                 (width - icon_size[0] + 0, 4, width - icon_size[0] + 3, 4),
+                 (width - icon_size[0] + 10, 4, width - icon_size[0] + 13, 4),
+                 (width - icon_size[0] + 0, 5, width - icon_size[0] + 3, 5),
+                 (width - icon_size[0] + 10, 5, width - icon_size[0] + 13, 5),
+                 )
+
+        for l in lines:
+            draw.line(l, fill=255)
+
+        return image, offset
+
+    def get_tskbr_image(self):
+        image = Image.new('1', (self.tskbr_size[0], self.tskbr_size[1]))
+
+        offset = 0
+
+        if self.tskbr_batt:
+            image, offset = self.draw_batt(image, offset)
+        if self.tskbr_wifi:
+            image, offset = self.draw_wifi(image, offset)
+        if self.tskbr_fona:
+            image, offset = self.draw_fona(image, offset)
+        if self.tskbr_message:
+            image, offset = self.draw_message(image, offset)
+        if self.tskbr_call:
+            image, offset = self.draw_call(image, offset)
+
+        return image
 
