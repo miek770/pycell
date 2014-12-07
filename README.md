@@ -4,23 +4,22 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-### 2014-11-14 12:57
-
-J'ai posé une question sur le Google Group par rapport au SPI, il n'apparaît pas dans /dev et ça semble être une erreur du côté de Acme Systems.
-
-Ce site indique comment contrôler le bouton P1 sur le Arietta G25 : [Arietta on-board button](http://www.acmesystems.it/arietta_p1_button). Je pourrais faire des tests avec ce bouton et le raccorder sur inotify pour générer des interrupts. Ça va être très pratique pour l'utilisation normale du téléphone (mise en veille / réveil).
-
-### 2014-10-08 20:01
-
-J'ai des problèmes avec l'encodage du texte lu du Fona (pour messages textes). L'arbre XML ne l'accepte pas, mais je ne parviens pas à le décoder ou à l'encoder correctement. Il va falloir que je fasse quelques recherches.
-
-### 2014-10-07 22:05
-
-Je suis en train de développer le générateur pour les SMS, mais ce n'est pas fini. Par contre je crois que ma méthode d'extraction de l'information va fonctionner quel que soit le contenu du message texte, sauf naturellement si celui-ci contient la chaîne de contrôle. Ça ne me semble pas être un problème très plausible étant donné l'état de prototype, mais c'est clair qu'à grande échelle ça ne serait pas sécuritaire...
-
-Je me demande si l'heure retournée par le message texte est en format 24h ou en format 12h.
-
-Je ne crois pas qu'il soit pertinent de sauvegarder les messages dans une base de données. Je ne risque pas de faire beaucoup de manipulation et vais peut-être donc les conserver dans la carte SIM jusqu'à ce que le développement soit plus avancé.
+- Souder les boutons ESC et OK;
+- Tester la connexion USB avec le Chromebook (réactiver le service);
+- Désactiver les LEDs pour économiser l'énergie;
+- Corriger le statut réseau (la pin est liée à la fréquence de la LED);
+- Ajouter une option pour le pointeur de ligne dans le générateur;
+- Créer un mode avion avec son icône;
+- Créer des attributs image et draw permanents dans la classe Phone;
+- Investiguer le comportement du signal RING;
+- Remplacer init par systemd;
+- Ajouter la synchronisation des contacts, courriels et événements;
+- Développer les menus de settings;
+- Ajouter un interrupteur ON/OFF;
+- L'application devrait arrêter et redémarrer le système au complet;
+- Tester / rechercher la veille sur WKUP;
+- Vérifier si je peux optimiser le clavier;
+- Monitorer le processeur, le téléphone est un peu lent actuellement.
 
 ## Matériel envisagé
 
