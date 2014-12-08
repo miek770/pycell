@@ -87,6 +87,8 @@ class Phone:
         self.disp = SSD1306(rst="J4.12", dc="J4.14", cs="J4.11")
         self.disp.begin()
         self.clear_display()
+        self.image = Image.new('1', (self.disp.width, self.disp.height))
+        self.draw = ImageDraw.Draw(self.image)
 
         # Initialisation du menu
         self.maxlines = 6
@@ -214,13 +216,12 @@ class Phone:
             msg('[Debug] Aucun menu parent pour {}'.format(self.menu.tag), self.args)
 
     def refresh(self):
-        image = Image.new('1', (self.disp.width, self.disp.height))
-        draw = ImageDraw.Draw(image)
+        self.clear_image()
 
         i = 0
         for l in range(self.cursor, len(self.buff)):
             if i < self.maxlines:
-                draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
+                self.draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
 #                if i == 0:
 #                    draw.text((0, 10*i), u'> {}'.format(self.buff[l]), font=self.font, fill=255)
 #                else:
@@ -228,22 +229,21 @@ class Phone:
                 i += 1
 
         # Display image.
-        self.disp.image(image)
+        self.disp.image(self.image)
         self.disp.display()
 
     def home(self):
-        image = Image.new('1', (self.disp.width, self.disp.height))
-        draw = ImageDraw.Draw(image)
+        self.clear_image()
 
         # Indique la date / heure en haut à gauche
         date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
-        draw.text((0, 0), date, font=self.font, fill=255)
+        self.draw.text((0, 0), date, font=self.font, fill=255)
 
         # Affiche la barre des tâches
-        image.paste(self.get_tskbr_image(), (0, image.size[1] - self.tskbr_size[1]))
+        self.image.paste(self.get_tskbr_image(), (0, self.image.size[1] - self.tskbr_size[1]))
 
         # Display image.
-        self.disp.image(image)
+        self.disp.image(self.image)
         self.disp.display()
 
     def show(self, message):
@@ -326,6 +326,9 @@ class Phone:
     def clear_display(self):
         self.disp.clear()
         self.disp.display()
+
+    def clear_image(self):
+        self.draw.rectangle((0, 0, self.disp.width, self.disp.height), outline=0, fill=0)
 
     def shutdown(self):
         self.keypad_sub.terminate()

@@ -8,7 +8,6 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
 - Créer un mode avion avec son icône;
-- Créer des attributs image et draw permanents dans la classe Phone;
 - Investiguer le comportement du signal RING;
 - Remplacer init par systemd;
 - Ajouter la synchronisation des contacts, courriels et événements;

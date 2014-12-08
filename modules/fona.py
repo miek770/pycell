@@ -111,11 +111,11 @@ class Fona:
         return self.read(self.ser.inWaiting())
 
     def read(self, l=False):
-        msg = u''
+        message = u''
         while self.new_data():
-            msg += unicode(self.ser.read(self.ser.inWaiting()).decode('latin-1'))
+            message += unicode(self.ser.read(self.ser.inWaiting()).decode('latin-1'))
             sleep(0.05)
-        return msg
+        return message
 
     def new_data(self):
         if self.ser.inWaiting():
@@ -197,10 +197,10 @@ class Fona:
     def set_encoding(self, encoding='GSM'):
         return self.write('AT+CSCS="{}"'.format(encoding))
 
-    def send_sms(self, num, msg):
+    def send_sms(self, num, message):
         self.ser.write('AT+CMGS="{0}"\r'.format(num))
         sleep(0.05)
-        self.ser.write('{0}{1}'.format(msg, chr(26)))
+        self.ser.write('{0}{1}'.format(message, chr(26)))
         sleep(0.05)
         return self.read(self.ser.inWaiting())
 
@@ -248,10 +248,10 @@ class Fona:
 
         liste_sms = list()
 
-        msg = self.write('AT+CMGL="ALL"').split('+CMGL: ')
-        msg.pop(0)
+        messages = self.write('AT+CMGL="ALL"').split('+CMGL: ')
+        messages.pop(0)
 
-        for m in msg:
+        for m in messages:
             (a, b) = m.split(',', 1)
             index = int(a)
 
@@ -271,6 +271,7 @@ class Fona:
 
             liste_sms.append(SMS(index, status, number, when, message))
 
+        msg("[Debug] read_all_sms() : {}".format(message), self.args)
         return liste_sms
 
     # Commandes liées à la voix
@@ -337,9 +338,9 @@ class Fona:
     #==============================================
     def gen_msg(self):
         menus = list()
-        msg = self.read_all_sms()
+        messages = self.read_all_sms()
 
-        for m in msg:
+        for m in messages:
             nom = 'sms{}'.format(m.index)
             titre = '{:%y%m%d %H:%M} - {}'.format(m.when, m.number)
             action = 'Generator'
