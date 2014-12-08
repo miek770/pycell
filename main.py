@@ -179,6 +179,15 @@ def main():
                         phone.go_child()
                     elif key == '8':
                         phone.scroll_down()
+
+                    # Temporaire, à retirer éventuellement
+                    elif key in ('*', '#'):
+                        msg("[Debug] Passage au mode 1 (Accueil).", args)
+                        mode = 1 # Accueil
+                        phone.home()
+                        delai = True
+                        count_delai = 0
+                        delai_veille = 5000
  
         # S'exécute toutes les 1s
         if count_1000ms >= 1000:

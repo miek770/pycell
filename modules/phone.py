@@ -220,10 +220,11 @@ class Phone:
         i = 0
         for l in range(self.cursor, len(self.buff)):
             if i < self.maxlines:
-                if i == 0:
-                    draw.text((0, 10*i), u'> {}'.format(self.buff[l]), font=self.font, fill=255)
-                else:
-                    draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
+                draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
+#                if i == 0:
+#                    draw.text((0, 10*i), u'> {}'.format(self.buff[l]), font=self.font, fill=255)
+#                else:
+#                    draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
                 i += 1
 
         # Display image.
