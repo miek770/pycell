@@ -7,6 +7,8 @@ import argparse, logging, sys, time, re
 from multiprocessing import Process, Pipe
 import subprocess as sub
 from datetime import datetime
+from textwrap import wrap
+from time import sleep
 
 from PIL import Image, ImageDraw, ImageFont
 import keys
@@ -115,8 +117,87 @@ class Phone:
         self.tskbr_message = True
         self.tskbr_call = True
 
-    # Initialisation du menu
-    #========================
+    # Général
+    #=========
+
+    def clear_display(self):
+        self.disp.clear()
+        self.disp.display()
+
+    def clear_image(self):
+        self.draw.rectangle((0, 0, self.disp.width, self.disp.height), outline=0, fill=0)
+
+    def popup(self, message, padding=3, text_width=24):
+
+        width, height = self.image.size
+
+        message = wrap(message, width=text_width)
+
+        largest = 0
+        highest = 0
+        for l in message:
+            w = self.font.getsize(l)
+            if w[0] > largest:
+                largest = w[0]
+            if w[1] > highest:
+                highest = w[1]
+
+        self.draw.rectangle(((width - largest)/2 - padding,
+                             (height - len(message)*highest)/2 - padding,
+                             (width + largest)/2 + padding,
+                             (height + len(message)*highest)/2 + padding,
+                             ),
+                            outline=255,
+                            fill=0)
+
+        line = 0
+        for l in message:
+            self.draw.text(((width - largest)/2,
+                            (height - len(message)*highest)/2 + line*highest,
+                            ),
+                           l,
+                           font=self.font,
+                           fill=255)
+            line += 1
+
+        self.disp.image(self.image)
+        self.disp.display()
+
+    # Actions (items Exec dans le menu)
+    #===================================
+
+    def shutdown(self):
+        self.keypad_sub.terminate()
+        self.fona.turn_off()
+        self.clear_display()
+        sys.exit()
+
+    def shell(self, command):
+        output = sub.check_output(command, shell=True)
+        self.popup(output)
+        sleep(3)
+        self.refresh()
+
+    # Accueil
+    #=========
+
+    def home(self):
+        self.clear_image()
+
+        # Indique la date / heure en haut à gauche
+        date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
+        self.draw.text((0, 0), date, font=self.font, fill=255)
+
+        # Affiche la barre des tâches
+        self.image.paste(self.get_tskbr_image(), (0, self.image.size[1] - self.tskbr_size[1]))
+
+        # Display image.
+        self.disp.image(self.image)
+        self.disp.display()
+
+    # Menus
+    #=======
+
     def init_menu(self):
         # Initialise le menu
         self.tree = etree.parse(self.menufile)
@@ -232,20 +313,6 @@ class Phone:
         self.disp.image(self.image)
         self.disp.display()
 
-    def home(self):
-        self.clear_image()
-
-        # Indique la date / heure en haut à gauche
-        date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
-        self.draw.text((0, 0), date, font=self.font, fill=255)
-
-        # Affiche la barre des tâches
-        self.image.paste(self.get_tskbr_image(), (0, self.image.size[1] - self.tskbr_size[1]))
-
-        # Display image.
-        self.disp.image(self.image)
-        self.disp.display()
-
     def show(self, message):
         if message.__class__ != unicode:
             message = message.decode('utf-8')
@@ -323,21 +390,8 @@ class Phone:
             self.cursor = len(self.buff) - 1
             self.refresh()
 
-    def clear_display(self):
-        self.disp.clear()
-        self.disp.display()
-
-    def clear_image(self):
-        self.draw.rectangle((0, 0, self.disp.width, self.disp.height), outline=0, fill=0)
-
-    def shutdown(self):
-        self.keypad_sub.terminate()
-        self.fona.turn_off()
-        self.clear_display()
-        sys.exit()
-
-# Barre de notification
-#=======================
+    # Barre de notification
+    #=======================
 
     def draw_batt(self, image, offset=0):
         batt_size = 13, 6

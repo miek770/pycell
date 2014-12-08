@@ -50,6 +50,7 @@
 
     <Settings>
         <Title>Settings</Title>
+        <Exec>shell('ls')</Exec>
     </Settings>
 
     <Shutdown>

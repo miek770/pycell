@@ -15,8 +15,6 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Ajouter un interrupteur ON/OFF;
 - L'application devrait arrêter et redémarrer le système au complet;
 - Tester / rechercher la veille sur WKUP;
-- Vérifier si je peux optimiser le clavier;
-- Monitorer le processeur, le téléphone est un peu lent actuellement;
 - Ajouter ToDo list.
 
 ## Matériel envisagé
