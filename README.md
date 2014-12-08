@@ -5,10 +5,8 @@
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
 - Souder les boutons ESC et OK;
-- Tester la connexion USB avec le Chromebook (réactiver le service);
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
-- Ajouter une option pour le pointeur de ligne dans le générateur;
 - Créer un mode avion avec son icône;
 - Créer des attributs image et draw permanents dans la classe Phone;
 - Investiguer le comportement du signal RING;
