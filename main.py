@@ -186,6 +186,8 @@ def main():
         if count_1000ms >= 1000:
             count_1000ms = 0
 
+            msg("Batterie : {}".format(phone.fona.get_battery()), args)
+
         # S'exécute après delai
         if delai and count_delai >= delai_veille:
             count_delai = 0

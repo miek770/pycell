@@ -57,6 +57,11 @@
                 <Exec>shell("""ip addr | sed '/192.168/!d' | cut -d" " -f6""")</Exec>
             </Adresse>
 
+            <Batterie>
+                <Title>Niveau batterie</Title>
+                <Exec>method(self.fona.get_battery())</Exec>
+            </Batterie>
+
             <Memoire>
                 <Title>Mémoire utilisée</Title>
                 <Exec>shell("""free -mh | tr -s ' ' | sed '/buffers\/cache/!d' | cut -d" " -f4""")</Exec>

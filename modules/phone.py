@@ -182,6 +182,12 @@ class Phone:
         sleep(3)
         self.refresh()
 
+    def method(self, method):
+        output = eval(u'self.{}'.format(method))
+        self.popup(output)
+        sleep(3)
+        self.refresh()
+
     # Accueil
     #=========
 
