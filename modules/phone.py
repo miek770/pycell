@@ -253,6 +253,13 @@ class Phone:
     def go_child(self):
         if self.menu[self.cursor].find('Generator') is not None:
             msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor].find('Title').text), self.args)
+
+            try:
+                self.menu[self.cursor].find('Submenu').clear()
+                msg('[Debug] Effaçage du sous-menu précédent, si existant.', self.args)
+            except AttributeError:
+                msg("[Debug] Aucun sous-menu à effacer.", self.args)
+
             self.create_submenus(self.menu[self.cursor].find('Generator').text)
             self.menu = self.menu[self.cursor].find('Submenu')
             self.buff = list()

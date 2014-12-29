@@ -229,5 +229,5 @@ if __name__ == '__main__':
             sys.exit()
 
         except:
-            msg("[Erreur] {}".format(sys.exc_info()[0]))
+            msg("[Erreur] {}".format(sys.exc_info()))
 
