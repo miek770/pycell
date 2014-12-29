@@ -117,6 +117,7 @@ def main():
                     msg("[Debug] Passage au mode 1 (Accueil).", args)
                     mode = 1 # Accueil
                     phone.home()
+                    phone.init_keypad()
                     delai = True
                     count_delai = 0
                     delai_veille = 5000
@@ -131,6 +132,7 @@ def main():
                     msg("[Debug] Passage au mode 0 (Veille).", args)
                     mode = 0 # Veille
                     phone.clear_display()
+                    phone.keypad_sub.terminate()
                     delai = False
 
                 elif not phone.but_ok.get():
@@ -144,10 +146,10 @@ def main():
                     key = phone.keypad_parent_conn.recv()
 
                     if key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
-                        msg("[Debug] Passage au mode 11 (composition).", args)
+                        msg("[Debug] Passage au mode 12 (composition).", args)
 
                     elif key in ('*', '#'):
-                        msg("[Debug] Passage au mode 2 (Menu).", args)
+                        msg("[Debug] Passage au mode 3 (Menu).", args)
                         mode = 2 # Menu
                         phone.refresh()
                         count_delai = 0
@@ -193,6 +195,7 @@ def main():
                 delai = False
                 mode = 0 # Veille
                 phone.clear_display()
+                phone.keypad_sub.terminate()
 
             elif mode == 2: # Accueil
                 msg("[Debug] Passage au mode 1 (Accueil).", args)

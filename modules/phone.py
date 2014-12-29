@@ -97,9 +97,7 @@ class Phone:
         self.menufile = menufile
 
         # Initialisation du clavier
-        self.keypad_parent_conn, self.keypad_child_conn = Pipe()
-        self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
-        self.keypad_sub.start()
+        self.init_keypad()
 
         # Initialisation du Fona
         self.fona = Fona(self.args)
@@ -119,6 +117,11 @@ class Phone:
 
     # Général
     #=========
+
+    def init_keypad(self):
+        self.keypad_parent_conn, self.keypad_child_conn = Pipe()
+        self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
+        self.keypad_sub.start()
 
     def clear_display(self):
         self.disp.clear()
