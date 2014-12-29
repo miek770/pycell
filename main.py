@@ -224,5 +224,16 @@ def main():
     return 0
 
 if __name__ == '__main__':
-    main()
+
+    while True:
+
+        try:
+            main()
+
+        except KeyboardInterrupt:
+            msg("[Debug] Interruption du programme.")
+            sys.exit()
+
+        except:
+            msg("[Erreur] {}".format(sys.exc_info()[0]))
 

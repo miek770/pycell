@@ -166,11 +166,12 @@ class Phone:
     # Actions (items Exec dans le menu)
     #===================================
 
-    def shutdown(self):
+    def shutdown(self, soft=False):
         self.keypad_sub.terminate()
         self.fona.turn_off()
         self.clear_display()
-        sys.exit()
+        if not soft:
+            sys.exit()
 
     def shell(self, command):
         output = sub.check_output(command, shell=True)
