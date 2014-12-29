@@ -38,7 +38,7 @@ class keypad:
 
         return None
 
-def loop(conn, f=0.01, d=0.2):
+def loop(conn, f=0.005, d=0.2):
     k = keypad()
     last = None
     lasttime = 0.0
@@ -51,6 +51,7 @@ def loop(conn, f=0.01, d=0.2):
                 last = r
                 lasttime = time()
                 conn.send(r)
+                sleep(0.1)
 
         sleep(f)
 

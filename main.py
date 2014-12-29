@@ -180,15 +180,6 @@ def main():
                     elif key == '8':
                         phone.scroll_down()
 
-                    # Temporaire, à retirer éventuellement
-                    elif key in ('*', '#'):
-                        msg("[Debug] Passage au mode 1 (Accueil).", args)
-                        mode = 1 # Accueil
-                        phone.home()
-                        delai = True
-                        count_delai = 0
-                        delai_veille = 5000
- 
         # S'exécute toutes les 1s
         if count_1000ms >= 1000:
             count_1000ms = 0
@@ -212,14 +203,14 @@ def main():
             else:
                 delai = False
 
-        count_10ms += 10
-        count_100ms += 10
-        count_1000ms += 10
+        count_10ms += 5
+        count_100ms += 5
+        count_1000ms += 5
 
         if delai:
-            count_delai += 10
+            count_delai += 5
 
-        time.sleep(0.01)
+        time.sleep(0.005)
 
     return 0
 
