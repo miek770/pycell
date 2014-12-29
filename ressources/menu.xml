@@ -50,7 +50,24 @@
 
     <Settings>
         <Title>Settings</Title>
-        <Exec>shell('ls')</Exec>
+        <Submenu>
+
+            <Adresse>
+                <Title>Adresse IP</Title>
+                <Exec>shell("""ip addr | sed '/192.168/!d' | cut -d" " -f6""")</Exec>
+            </Adresse>
+
+            <Memoire>
+                <Title>Mémoire utilisée</Title>
+                <Exec>shell("""free -mh | tr -s ' ' | sed '/buffers\/cache/!d' | cut -d" " -f4""")</Exec>
+            </Memoire>
+
+            <Version>
+                <Title>Version</Title>
+                <Exec>shell("""cat /proc/version""")</Exec>
+            </Version>
+
+        </Submenu>
     </Settings>
 
     <Shutdown>
