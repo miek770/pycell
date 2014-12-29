@@ -4,7 +4,7 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-- Souder les boutons ESC et OK;
+- Remplacer popup() par show() dans settings;
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
 - Créer un mode avion avec son icône;
@@ -14,8 +14,7 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Développer les menus de settings;
 - Ajouter un interrupteur ON/OFF;
 - L'application devrait arrêter et redémarrer le système au complet;
-- Tester / rechercher la veille sur WKUP;
-- Ajouter ToDo list.
+- Tester / rechercher la veille sur WKUP.
 
 ## Matériel envisagé
 
