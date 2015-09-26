@@ -18,7 +18,7 @@ class Keypad:
         self.col.append(Pin('J4.31', 'INPUT')) # Col 0
         self.col.append(Pin('J4.29', 'INPUT')) # Col 1
         self.col.append(Pin('J4.27', 'INPUT')) # Col 2
-        self.col.append(Pin('J4.19', 'INPUT')) # Col 3 - À corriger dans le circuit, actuellement soudé sur J4.25
+        self.col.append(Pin('J4.19', 'INPUT')) # Col 3
         self.col.append(Pin('J4.21', 'INPUT')) # Col 4
 
         for r in self.row:

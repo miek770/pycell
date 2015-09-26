@@ -4,8 +4,8 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-- corriger les pins dans le circuit, le dts (un seul UART, un CS0) et phone.py
-
+- corriger les pins dans le circuit et le dts (un seul UART, un CS0);
+- Remplacer les boutons ok et esc par le keypad dans main.py;
 - Remplacer popup() par show() dans settings;
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
