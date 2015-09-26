@@ -5,7 +5,7 @@ from ablib import Pin
 from time import sleep, time
 
 class Keypad:
-    def __init__(self):
+    def __init__(self, period=0.005, delay=0.2):
 
         self.row = list()
         self.col = list()
@@ -21,10 +21,13 @@ class Keypad:
         self.col.append(Pin('J4.19', 'INPUT')) # Col 3
         self.col.append(Pin('J4.21', 'INPUT')) # Col 4
 
+        self.period = period
+        self.delay = delay
+
         for r in self.row:
             r.on()
 
-        self.key = [['1', '2', '3', 'a', 'b'], ['4', '5', '6', 'c', 'd'], ['7', '8', '9', 'e', 'f'], ['*', '0', '#', 'g', 'h']]
+        self.key = [['1', '2', '3', 'o', 'e'], ['4', '5', '6', 'd', 'u'], ['7', '8', '9', 'l', 'r'], ['*', '0', '#', 'x', 'y']]
 
     def read(self):
 
@@ -40,7 +43,7 @@ class Keypad:
 
         return None
 
-    def test(self, f=0.005, d=0.2):
+    def test(self):
         last = None
         lasttime = 0.0
 
@@ -48,15 +51,15 @@ class Keypad:
             r = self.read()
 
             if r:
-                if r != last or time() > lasttime + d:
+                if r != last or time() > lasttime + self.delay:
                     last = r
                     lasttime = time()
                     print r
                     sleep(0.1)
 
-            sleep(f)
+            sleep(self.period)
 
-def loop(conn, f=0.005, d=0.2):
+def loop(conn):
     k = Keypad()
     last = None
     lasttime = 0.0
@@ -65,11 +68,14 @@ def loop(conn, f=0.005, d=0.2):
         r = k.read()
 
         if r:
-            if r != last or time() > lasttime + d:
+            if r != last or time() > lasttime + k.delay:
                 last = r
                 lasttime = time()
                 conn.send(r)
                 sleep(0.1)
 
-        sleep(f)
+        sleep(k.period)
+
+        if conn.poll():
+            k.period = conn.recv()
 

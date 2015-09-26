@@ -73,6 +73,7 @@ def main():
 
     phone = Phone(args)
     phone.init_menu()
+    phone.init_keypad()
 
     # Boucle principale
     #===================
@@ -117,77 +118,79 @@ def main():
 
             if mode == 0: # Veille
 
-#                if not phone.but_esc.get() or not phone.but_ok.get():
-#                    msg("[Debug] Passage au mode 1 (Accueil).", args)
-#                    mode = 1 # Accueil
-#                    phone.home()
-#                    phone.init_keypad()
-#                    delai = True
-#                    count_delai = 0
-#                    delai_veille = 5000
+                if phone.keypad_parent_conn.poll():
+                    key = phone.keypad_parent_conn.recv()
 
-#                elif phone.fona.ring.get():
-                if phone.fona.ring.get():
+                    if key == 'o':
+                        msg("[Debug] Passage au mode 1 (Accueil).", args)
+                        mode = 1 # Accueil
+                        phone.keypad_parent_conn.send(0.005)
+                        phone.home()
+                        delai = True
+                        count_delai = 0
+                        delai_veille = 5000
+
+                # Vérifier si ça marche bien, si oui mettre en premier
+                elif phone.fona.ring.get():
                     #msg("[Debug] Passage au mode 12 (appel entrant)", args)
                     pass
 
             elif mode == 1: # Accueil
 
-#                if not phone.but_esc.get():
-#                    msg("[Debug] Passage au mode 0 (Veille).", args)
-#                    mode = 0 # Veille
-#                    phone.clear_display()
-#                    phone.keypad_sub.terminate()
-#                    delai = False
-
-#                elif not phone.but_ok.get():
-#                    msg("[Debug] Passage au mode 2 (Menu).", args)
-#                    mode = 2 # Menu
-#                    phone.refresh()
-#                    count_delai = 0
-#                    delai_veille = 10000
-
-#                elif phone.keypad_parent_conn.poll():
                 if phone.keypad_parent_conn.poll():
                     key = phone.keypad_parent_conn.recv()
 
-                    if key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
+                    if key == 'e':
+                        msg("[Debug] Passage au mode 0 (Veille).", args)
+                        mode = 0 # Veille
+                        phone.clear_display()
+                        phone.keypad_parent_conn.send(0.05)
+                        delai = False
+
+                    elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
                         msg("[Debug] Passage au mode 12 (composition).", args)
 
-                    elif key in ('*', '#'):
+                    elif key in ('o', '*', '#', 'l', 'r', 'u', 'd'):
                         msg("[Debug] Passage au mode 2 (Menu).", args)
                         mode = 2 # Menu
                         phone.refresh()
                         count_delai = 0
                         delai_veille = 10000
 
+                # Vérifier si ça marche bien, si oui mettre en premier
+                elif phone.fona.ring.get():
+                    #msg("[Debug] Passage au mode 12 (appel entrant)", args)
+                    pass
+
             elif mode == 2: # Menu
 
-#                if not phone.but_esc.get():
-#                    msg("[Debug] Passage au mode 1 (Accueil).", args)
-#                    mode = 1 # Accueil
-#                    phone.home()
-#                    delai = True
-#                    count_delai = 0
-#                    delai_veille = 5000
-
-#                elif not phone.but_ok.get():
-#                    phone.go_child()
-
-#                elif phone.keypad_parent_conn.poll():
                 if phone.keypad_parent_conn.poll():
                     key = phone.keypad_parent_conn.recv()
 
-                    if key == '2':
+                    if key == 'e':
+                        msg("[Debug] Passage au mode 1 (Accueil).", args)
+                        mode = 1 # Accueil
+                        phone.home()
+                        delai = True
+                        count_delai = 0
+                        delai_veille = 5000
+
+                    elif key in ('u', '2'):
                         phone.scroll_up()
-                    elif key == '4':
+
+                    elif key == 'l':
                         phone.go_parent()
-                    elif key == '5':
+
+                    elif key in ('r', 'o'):
                         phone.go_child()
-                    elif key == '6':
-                        phone.go_child()
-                    elif key == '8':
+
+                    elif key in ('d', '8'):
                         phone.scroll_down()
+
+                # Vérifier si ça marche bien, si oui mettre en premier
+                elif phone.fona.ring.get():
+                    #msg("[Debug] Passage au mode 12 (appel entrant)", args)
+                    pass
 
         # S'exécute toutes les 1s
         if count_1000ms >= 1000:
@@ -208,7 +211,7 @@ def main():
                 delai = False
                 mode = 0 # Veille
                 phone.clear_display()
-                phone.keypad_sub.terminate()
+                phone.keypad_parent_conn.send(0.05)
 
             elif mode == 2: # Accueil
                 msg("[Debug] Passage au mode 1 (Accueil).", args)
