@@ -3,7 +3,7 @@
 #
 #  main.py
 #
-#  Copyright 2014 Michel Lavoie <lavoie.michel@gmail.com>
+#  Copyright 2015 Michel Lavoie <lavoie.michel@gmail.com>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -49,12 +49,12 @@ def main():
     parser.add_argument('-v',
                         '--verbose',
                         action='store_true',
-                        help='Imprime l\'aide sur l\'exécution du script.')
+                        help="Imprime l'aide sur l'exécution du script.")
     
     parser.add_argument('-l',
                         '--logfile',
                         action='store',
-                        help='Spécifie le chemin du journal d\'événement.')
+                        help="Spécifie le chemin du journal d'événement.")
 
     args = parser.parse_args()
 
@@ -84,10 +84,8 @@ def main():
     count_10 = 0
     count_100 = 0
     count_1000 = 0
-    count_10000 = 0
 
-    # Temporisation de la boucle principale, en ms
-    tick = 10
+    diviseur = 100
 
     modes = (# Général
              (0, "Veille"),
@@ -102,19 +100,18 @@ def main():
     mode = 1 # Accueil
     phone.home()
 
-    delai_veille = 10000 # En ticks
+    delai_veille = 1000 # En ticks
     count_delai = 0
     delai = True
 
     while True:
 
-        # S'exécute toutes les 10
+        # S'exécute à chaque fois
+        pass
+
+        # S'exécute toutes les 10 ticks
         if count_10 >= 10:
             count_10 = 0
-
-        # S'exécute toutes les 100
-        if count_100 >= 100:
-            count_100 = 0
 
             if mode == 0: # Veille
 
@@ -124,7 +121,7 @@ def main():
                     if key == 'o':
                         msg("[Debug] Passage au mode 1 (Accueil).", args)
                         mode = 1 # Accueil
-                        tick = 10
+                        diviseur = 100
                         phone.keypad_parent_conn.send(0.005)
                         phone.home()
                         delai = True
@@ -144,7 +141,7 @@ def main():
                     if key == 'e':
                         msg("[Debug] Passage au mode 0 (Veille).", args)
                         mode = 0 # Veille
-                        tick = 100
+                        diviseur = 10
                         phone.clear_display()
                         phone.keypad_parent_conn.send(0.05)
                         delai = False
@@ -194,15 +191,15 @@ def main():
                     #msg("[Debug] Passage au mode 12 (appel entrant)", args)
                     pass
 
-        # S'exécute toutes les 1s
+        # S'exécute tous les 100 ticks
+        if count_100 >= 100:
+            count_100 = 0
+
+            #msg("Batterie : {}".format(phone.fona.get_battery()), args)
+
+        # S'exécute tous les 1000 ticks
         if count_1000 >= 1000:
             count_1000 = 0
-
-            msg("Batterie : {}".format(phone.fona.get_battery()), args)
-
-        # S'exécute toutes les 10s
-        if count_10000 >= 10000:
-            count_10000 = 0
 
         # S'exécute après delai
         if delai and count_delai >= delai_veille:
@@ -212,7 +209,7 @@ def main():
                 msg("[Debug] Passage au mode 0 (Veille).", args)
                 delai = False
                 mode = 0 # Veille
-                tick = 100
+                diviseur = 10
                 phone.clear_display()
                 phone.keypad_parent_conn.send(0.05)
 
@@ -225,15 +222,14 @@ def main():
             else:
                 delai = False
 
-        count_10 += tick
-        count_100 += tick
-        count_1000 += tick
-        count_10000 += tick
+        count_10 += 1
+        count_100 += 1
+        count_1000 += 1
 
         if delai:
-            count_delai += tick
+            count_delai += 1
 
-        time.sleep(tick/1000.0)
+        time.sleep(1.0/diviseur)
 
     return 0
 
