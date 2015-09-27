@@ -81,13 +81,13 @@ def main():
     # J'ai créé des compteurs indépendants pour pouvoir les redémarrer à zéro
     # sans affecter les autres (pour ne pas atteindre des chiffres inutilement
     # élevés).
-    count_10ms = 0
-    count_100ms = 0
-    count_1000ms = 0
-    count_10000ms = 0
+    count_10 = 0
+    count_100 = 0
+    count_1000 = 0
+    count_10000 = 0
 
     # Temporisation de la boucle principale, en ms
-    step = 10.0
+    tick = 10
 
     modes = (# Général
              (0, "Veille"),
@@ -102,19 +102,19 @@ def main():
     mode = 1 # Accueil
     phone.home()
 
-    delai_veille = 10000 # En ms 
+    delai_veille = 10000 # En ticks
     count_delai = 0
     delai = True
 
     while True:
 
-        # S'exécute toutes les 10ms
-        if count_10ms >= 10:
-            count_10ms = 0
+        # S'exécute toutes les 10
+        if count_10 >= 10:
+            count_10 = 0
 
-        # S'exécute toutes les 100ms
-        if count_100ms >= 100:
-            count_100ms = 0
+        # S'exécute toutes les 100
+        if count_100 >= 100:
+            count_100 = 0
 
             if mode == 0: # Veille
 
@@ -124,6 +124,7 @@ def main():
                     if key == 'o':
                         msg("[Debug] Passage au mode 1 (Accueil).", args)
                         mode = 1 # Accueil
+                        tick = 10
                         phone.keypad_parent_conn.send(0.005)
                         phone.home()
                         delai = True
@@ -143,6 +144,7 @@ def main():
                     if key == 'e':
                         msg("[Debug] Passage au mode 0 (Veille).", args)
                         mode = 0 # Veille
+                        tick = 100
                         phone.clear_display()
                         phone.keypad_parent_conn.send(0.05)
                         delai = False
@@ -193,14 +195,14 @@ def main():
                     pass
 
         # S'exécute toutes les 1s
-        if count_1000ms >= 1000:
-            count_1000ms = 0
+        if count_1000 >= 1000:
+            count_1000 = 0
 
             msg("Batterie : {}".format(phone.fona.get_battery()), args)
 
         # S'exécute toutes les 10s
-        if count_10000ms >= 10000:
-            count_10000ms = 0
+        if count_10000 >= 10000:
+            count_10000 = 0
 
         # S'exécute après delai
         if delai and count_delai >= delai_veille:
@@ -210,6 +212,7 @@ def main():
                 msg("[Debug] Passage au mode 0 (Veille).", args)
                 delai = False
                 mode = 0 # Veille
+                tick = 100
                 phone.clear_display()
                 phone.keypad_parent_conn.send(0.05)
 
@@ -222,15 +225,15 @@ def main():
             else:
                 delai = False
 
-        count_10ms += step
-        count_100ms += step
-        count_1000ms += step
-        count_10000ms += step
+        count_10 += tick
+        count_100 += tick
+        count_1000 += tick
+        count_10000 += tick
 
         if delai:
-            count_delai += step
+            count_delai += tick
 
-        time.sleep(step/1000)
+        time.sleep(tick/1000.0)
 
     return 0
 
