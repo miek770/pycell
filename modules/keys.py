@@ -5,7 +5,7 @@ from ablib import Pin
 from time import sleep, time
 
 class Keypad:
-    def __init__(self, period=0.005, delay=0.2):
+    def __init__(self, period=0.05, delay=0.3):
 
         self.row = list()
         self.col = list()
