@@ -95,6 +95,7 @@ class Phone:
         # Initialisation du menu
         self.maxlines = 6
         self.menufile = menufile
+        self.init_menu()
 
         # Initialisation du clavier
         self.init_keypad()
