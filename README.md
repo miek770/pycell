@@ -4,8 +4,8 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
+- C'est étrange, le module keys.py fonctionne bien tout seul mais dans main.py la mauvaise action est souvent lancée. Par exemple en appuyant sur 'down' le programme interprète 'up' ou 'left';
 - corriger les pins dans le circuit et le dts (un seul UART, un CS0);
-- Remplacer les boutons ok et esc par le keypad dans main.py;
 - Remplacer popup() par show() dans settings;
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
@@ -33,6 +33,7 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Carte SIM Rogers
 
 ### Périphériques
+
 - [Electret Microphone - 20Hz-20KHz Omnidirectional](https://www.adafruit.com/product/1064)
 - [Mini Metal Speaker w/ Wires - 8 ohm 0.5W](https://www.adafruit.com/product/1890)
 - [Monochrome 1.3" 128x64 OLED graphic display](http://www.adafruit.com/products/938)
@@ -43,4 +44,3 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 ## Réseaux utilisables
 
 - [Rogers (incluant Fido)](http://en.wikipedia.org/wiki/List_of_mobile_network_operators_of_the_Americas#Canada)
-

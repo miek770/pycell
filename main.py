@@ -88,6 +88,8 @@ def main():
     count_100 = 0
     count_1000 = 0
 
+    # La période de la boucle principale équivaut à 1s divisée par le diviseur
+    # ici-bas. Donc avec diviseur=100 la période est de 10ms.
     diviseur = 100
 
     modes = (# Général
@@ -103,7 +105,7 @@ def main():
     mode = 1 # Accueil
     phone.home()
 
-    delai_veille = 1000 # En ticks
+    delai_veille = 1000 # En ticks, 10s avec diviseur=100
     count_delai = 0
     delai = True
 
@@ -149,10 +151,10 @@ def main():
                         phone.keypad_parent_conn.send(KEYS_SLOW)
                         delai = False
 
-                    elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9'):
+                    elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
                         msg("[Debug] Passage au mode 12 (composition).", args)
 
-                    elif key in ('o', '*', '#', 'l', 'r', 'u', 'd'):
+                    elif key in ('o', 'l', 'r', 'u', 'd'):
                         msg("[Debug] Passage au mode 2 (Menu).", args)
                         mode = 2 # Menu
                         phone.refresh()
@@ -177,17 +179,17 @@ def main():
                         count_delai = 0
                         delai_veille = 5000
 
-                    elif key in ('u', '2'):
+                    elif key == 'u':
                         phone.scroll_up()
+
+                    elif key == 'd':
+                        phone.scroll_down()
 
                     elif key == 'l':
                         phone.go_parent()
 
                     elif key in ('r', 'o'):
                         phone.go_child()
-
-                    elif key in ('d', '8'):
-                        phone.scroll_down()
 
                 # Vérifier si ça marche bien, si oui mettre en premier
                 elif phone.fona.ring.get():
