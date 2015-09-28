@@ -4,7 +4,8 @@
 #  phone.py
 
 import argparse, logging, sys, time, re
-from multiprocessing import Process, Pipe
+from multiprocessing import Process
+from multiprocessing.queues import SimpleQueue
 import subprocess as sub
 from datetime import datetime
 from textwrap import wrap
@@ -119,8 +120,8 @@ class Phone:
     #=========
 
     def init_keypad(self):
-        self.keypad_parent_conn, self.keypad_child_conn = Pipe()
-        self.keypad_sub = Process(target=keys.loop, args=(self.keypad_child_conn, ))
+        self.keypad_queue = SimpleQueue()
+        self.keypad_sub = Process(target=keys.loop, args=(self.keypad_queue, ))
         self.keypad_sub.start()
 
     def clear_display(self):

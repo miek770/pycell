@@ -59,7 +59,8 @@ class Keypad:
 
             sleep(self.period)
 
-def loop(conn):
+# Fonction utilisée par phone.py (en multiprocessing)
+def loop(queue):
     k = Keypad()
     last = None
     lasttime = 0.0
@@ -71,11 +72,23 @@ def loop(conn):
             if r != last or time() > lasttime + k.delay:
                 last = r
                 lasttime = time()
-                conn.send(r)
+                queue.put(r)
                 sleep(0.1)
 
         sleep(k.period)
 
-        if conn.poll():
-            k.period = conn.recv()
+# Pour débuggage seulement
+if __name__ == '__main__':
+    from multiprocessing import Process
+    from multiprocessing.queues import SimpleQueue
+
+    keypad_queue = SimpleQueue()
+    keypad_sub = Process(target=loop, args=(keypad_queue, ))
+    keypad_sub.start()
+
+    while True:
+        if not keypad_queue.empty():
+            print keypad_queue.get()
+
+        sleep(0.01)
 

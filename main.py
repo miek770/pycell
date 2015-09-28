@@ -25,9 +25,6 @@ import argparse, logging, sys, time, re
 from modules.phone import Phone
 from lxml import etree
 
-KEYS_FAST = 0.05
-KEYS_SLOW = 0.5
-
 #===============================================================================
 # Fonction :    msg(msg, args, lvl)
 # Description : Cette fonction permet d'utiliser une seule fonction pour toute
@@ -120,14 +117,14 @@ def main():
 
             if mode == 0: # Veille
 
-                if phone.keypad_parent_conn.poll():
-                    key = phone.keypad_parent_conn.recv()
+                if not phone.keypad_queue.empty():
+                    key = phone.keypad_queue.get()
+                    msg("[Debug] Touche '{}' enfoncée.".format(key), args)
 
                     if key == 'o':
                         msg("[Debug] Passage au mode 1 (Accueil).", args)
                         mode = 1 # Accueil
                         diviseur = 100
-                        phone.keypad_parent_conn.send(KEYS_FAST)
                         phone.home()
                         delai = True
                         count_delai = 0
@@ -140,15 +137,15 @@ def main():
 
             elif mode == 1: # Accueil
 
-                if phone.keypad_parent_conn.poll():
-                    key = phone.keypad_parent_conn.recv()
+                if not phone.keypad_queue.empty():
+                    key = phone.keypad_queue.get()
+                    msg("[Debug] Touche '{}' enfoncée.".format(key), args)
 
                     if key == 'e':
                         msg("[Debug] Passage au mode 0 (Veille).", args)
                         mode = 0 # Veille
                         diviseur = 10
                         phone.clear_display()
-                        phone.keypad_parent_conn.send(KEYS_SLOW)
                         delai = False
 
                     elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
@@ -168,8 +165,9 @@ def main():
 
             elif mode == 2: # Menu
 
-                if phone.keypad_parent_conn.poll():
-                    key = phone.keypad_parent_conn.recv()
+                if not phone.keypad_queue.empty():
+                    key = phone.keypad_queue.get()
+                    msg("[Debug] Touche '{}' enfoncée.".format(key), args)
 
                     if key == 'e':
                         msg("[Debug] Passage au mode 1 (Accueil).", args)
@@ -216,7 +214,6 @@ def main():
                 mode = 0 # Veille
                 diviseur = 10
                 phone.clear_display()
-                phone.keypad_parent_conn.send(KEYS_SLOW)
 
             elif mode == 2: # Accueil
                 msg("[Debug] Passage au mode 1 (Accueil).", args)
