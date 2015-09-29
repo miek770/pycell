@@ -243,7 +243,7 @@ if __name__ == '__main__':
             msg("[Debug] Interruption du programme.")
             sys.exit()
 
-        except:
-            msg("[Erreur] {}".format(sys.exc_info()))
-            sys.exit()
+#        except:
+#            msg("[Erreur] {}".format(sys.exc_info()))
+#            sys.exit()
 

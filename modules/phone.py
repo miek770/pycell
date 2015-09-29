@@ -187,7 +187,7 @@ class Phone:
         self.clear_image()
 
         # Indique la date / heure en haut à gauche
-        date = datetime.strftime(datetime.now(), "%y-%m-%d %H:%M:%S")
+        date = datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M:%S")
         self.draw.text((0, 0), date, font=self.font, fill=255)
 
         # Affiche la barre des tâches
@@ -452,15 +452,28 @@ class Phone:
         width -= offset
         offset += icon_size[0] + self.tskbr_padding
 
+        signal = int(sub.check_output("cat /proc/net/wireless | grep wlan0 | cut -b 16-17", shell=True))
+        msg("[Debug] Wifi signal strength = {}".format(signal), self.args)
+
         try:
+
             # 2 = Connected
-            if sub.check_output("iwconfig wlan0 | grep ESSID", shell=True):
+            if signal > 0:
+                msg("[Debug] Wifi connected", self.args)
                 status = 2
-            # 1 = On
-            else:
+
+            # 1 = On, but disconnected
+            elif not sub.check_output("iwconfig wlan0 | grep ESSID", shell=True):
+                msg("[Debug] Wifi on, but disconnected", self.args)
                 status = 1
+
+            else:
+                msg("[Debug] Problème avec Phone.draw_wifi(), la détection de déconnexion ne fonctionne pas.", self.args)
+                status = 0
+
         # 0 = Off
         except sub.CalledProcessError:
+            msg("[Debug] Wifi off", self.args)
             status = 0
 
         p = [(4, 5),

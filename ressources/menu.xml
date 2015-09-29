@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <MainMenu>
 
+    <Agenda>
+        <Title>Agenda</Title>
+        <Generator>gen_agenda()</Generator>
+    </Agenda>
+
     <Phone>
-        <Title>Phone</Title>
+        <Title>Appels</Title>
         <Submenu>
 
             <Keypad>
-                <Title>Dial number</Title>
+                <Title>Appeler</Title>
                 <Exec>call_number</Exec>
             </Keypad>
 
             <Favorites>
-                <Title>Call favorite contact</Title>
+                <Title>Favoris</Title>
                 <Generator>gen_fav_contacts()</Generator>
             </Favorites>
 
             <Contacts>
-                <Title>Call contact</Title>
+                <Title>Contacts</Title>
                 <Generator>gen_contacts()</Generator>
             </Contacts>
 
             <Messages>
-                <Title>Vocal messages</Title>
+                <Title>Boîte vocale</Title>
                 <Generator>fona.gen_voice_msg()</Generator>
             </Messages>
 
         </Submenu>
     </Phone>
 
-    <TextMessage>
-        <Title>Text messages</Title>
-        <Generator>fona.gen_msg()</Generator>
-    </TextMessage>
-
-    <Email>
-        <Title>Emails</Title>
-        <Generator>get_emails()</Generator>
-    </Email>
-
     <Contacts>
         <Title>Contacts</Title>
         <Generator>gen_contacts()</Generator>
     </Contacts>
 
-    <Agenda>
-        <Title>Agenda</Title>
-        <Generator>gen_agenda()</Generator>
-    </Agenda>
+    <Email>
+        <Title>Courriels</Title>
+        <Generator>get_emails()</Generator>
+    </Email>
+
+    <TextMessage>
+        <Title>Messages</Title>
+        <Generator>fona.gen_msg()</Generator>
+    </TextMessage>
 
     <Settings>
-        <Title>Settings</Title>
+        <Title>Réglages</Title>
         <Submenu>
 
             <Adresse>
@@ -87,11 +87,16 @@
                 <Exec>shell("""cat /proc/version""")</Exec>
             </Version>
 
+            <Wifi>
+                <Title>Wifi</Title>
+                <Exec>shell("""cat /proc/net/wireless""")</Exec>
+            </Wifi>
+
         </Submenu>
     </Settings>
 
     <Shutdown>
-        <Title>Shutdown</Title>
+        <Title>Éteindre</Title>
         <Exec>shutdown()</Exec>
     </Shutdown>
 
