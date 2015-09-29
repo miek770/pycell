@@ -181,6 +181,10 @@ class Phone:
         output = sub.check_output(command, shell=True)
         return self.show(output)
 
+    def method(self, command):
+        output = eval(command)
+        return self.show(output)
+
     # Accueil
     #=========
 

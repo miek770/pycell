@@ -59,7 +59,7 @@
 
             <Batterie>
                 <Title>Niveau batterie</Title>
-                <Exec>fona.get_battery()</Exec>
+                <Exec>method("self.fona.get_battery()")</Exec>
             </Batterie>
 
             <Memoire>
