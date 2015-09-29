@@ -148,7 +148,7 @@ def main():
                 elif key in ('o', 'l', 'r', 'u', 'd'):
                     msg("[Debug] Passage au mode 2 (Menu).", args)
                     mode = 2 # Menu
-                    phone.refresh()
+                    phone.refresh_display()
                     count_delai = 0
                     delai_veille = 10000
 
@@ -241,4 +241,5 @@ if __name__ == '__main__':
 
         except:
             msg("[Erreur] {}".format(sys.exc_info()))
+            sys.exit()
 

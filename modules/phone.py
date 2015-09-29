@@ -179,15 +179,7 @@ class Phone:
 
     def shell(self, command):
         output = sub.check_output(command, shell=True)
-        self.popup(output)
-        sleep(3)
-        self.refresh()
-
-    def method(self, method):
-        output = eval(u'self.{}'.format(method))
-        self.popup(output)
-        sleep(3)
-        self.refresh()
+        return self.show(output)
 
     # Accueil
     #=========
@@ -220,8 +212,6 @@ class Phone:
         for m in self.menu:
             self.buff.append(m.find('Title').text)
 
-#        self.refresh()
-
     # Cette fonction crée des sous-menus à partir d'une liste de tuples bâtie ainsi :
     # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
     #
@@ -239,68 +229,79 @@ class Phone:
         submenus = eval(u'self.{}'.format(generator))
         msg(u'[Debug] submenus = {}'.format(submenus), self.args)
 
-        # Effacer les sous-menus actuels, si existants
+        return submenus
+
+    # Insère les sous-menus dans l'arborescence existante
+    def insert_submenus(self, submenus):
+
+        # Effacer les sous-menus actuels, si existants (niveau 1 et 2)
         if self.menu[self.cursor].find('Submenu') is not None:
             etree.strip_elements(self.menu[self.cursor], 'Submenu')
 
-        # Popule le nouveau sous-menu
+        # Popule le nouveau sous-menu (niveau 1)
         etree.SubElement(self.menu[self.cursor], 'Submenu')
         for menu in submenus:
+
+            # Créé le sous-menu (niveau 2)
             msg(u'[Debug] menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]), self.args)
             etree.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
 
+            # Nomme le sous-menu (niveau 2)
             if menu[1] is not None:
                 etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
                 self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
 
+            # Affecte l'action et la commande du sous-menu (niveau 2)
             if menu[2] is not None and menu[3] is not None:
                 etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
                 self.menu[self.cursor].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
+    # Mise à jour du buffer de menu pour l'affichage
+    def update_buffer(self):
+        self.buff = list()
+        self.previous_cursor = self.cursor
+        self.cursor = 0
+
+        for m in self.menu:
+            try:
+                self.buff.append(unicode(m.find('Title').text))
+            except AttributeError:
+                msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
+
+    # Descend d'un niveau dans la navigation
     def go_child(self):
+
+        # Le prochain niveau est un générateur
         if self.menu[self.cursor].find('Generator') is not None:
             msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor].find('Title').text), self.args)
 
-            try:
-                self.menu[self.cursor].find('Submenu').clear()
-                msg('[Debug] Effaçage du sous-menu précédent, si existant.', self.args)
-            except AttributeError:
-                msg("[Debug] Aucun sous-menu à effacer.", self.args)
-
-            self.create_submenus(self.menu[self.cursor].find('Generator').text)
+            self.insert_submenus(self.create_submenus(self.menu[self.cursor].find('Generator').text))
             self.menu = self.menu[self.cursor].find('Submenu')
-            self.buff = list()
-            self.previous_cursor = self.cursor
-            self.cursor = 0
+            self.update_buffer()
+            self.refresh_display()
 
-            for m in self.menu:
-                try:
-                    self.buff.append(unicode(m.find('Title').text))
-                except AttributeError:
-                    msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
-
-            self.refresh()
-
-        elif self.menu[self.cursor].find('Submenu') is not None:
-            self.menu = self.menu[self.cursor].find('Submenu')
-            self.buff = list()
-            self.cursor = 0
-
-            for m in self.menu:
-                try:
-                    self.buff.append(unicode(m.find('Title').text))
-                except AttributeError:
-                    msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
-
-            self.refresh()
-
+        # Le prochain niveau est une commande
         elif self.menu[self.cursor].find('Exec') is not None:
             msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
-            eval(u'self.{}'.format(self.menu[self.cursor].find('Exec').text))
+            
+            self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor].find('Exec').text)))
+            self.menu = self.menu[self.cursor].find('Submenu')
+            self.update_buffer()
+            self.refresh_display()
 
+        # Le prochain niveau est un sous-menu
+        elif self.menu[self.cursor].find('Submenu') is not None:
+            msg('[Debug] Descente dans le sous-menu', self.args)
+
+            self.menu = self.menu[self.cursor].find('Submenu')
+            self.update_buffer()
+            self.refresh_display()
+
+        # Le prochain niveau n'a aucune action de définie (ex.: texte)
         else:
             msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag, ), self.args)
-        
+
+    # Remonte d'un niveau dans la navigation
     def go_parent(self):
         try:
             self.menu = self.menu.find('..').find('..')
@@ -310,11 +311,13 @@ class Phone:
             for m in self.menu:
                 self.buff.append(m.find('Title').text)
 
-            self.refresh()
+            self.refresh_display()
+
         except AttributeError:
             msg('[Debug] Aucun menu parent pour {}'.format(self.menu.tag), self.args)
 
-    def refresh(self):
+    # Synchronise le OLED
+    def refresh_display(self):
         self.clear_image()
 
         i = 0
@@ -331,6 +334,7 @@ class Phone:
         self.disp.image(self.image)
         self.disp.display()
 
+    # Retourne un menu composé des lignes de texte de "message"
     def show(self, message):
         if message.__class__ != unicode:
             message = message.decode('utf-8')
@@ -395,18 +399,18 @@ class Phone:
     def scroll_down(self):
         if self.cursor < len(self.buff) - 1:
             self.cursor += 1
-            self.refresh()
+            self.refresh_display()
         else:
             self.cursor = 0
-            self.refresh()
+            self.refresh_display()
 
     def scroll_up(self):
         if self.cursor > 0:
             self.cursor -= 1
-            self.refresh()
+            self.refresh_display()
         else:
             self.cursor = len(self.buff) - 1
-            self.refresh()
+            self.refresh_display()
 
     # Barre de notification
     #=======================
