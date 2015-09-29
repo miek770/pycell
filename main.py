@@ -102,7 +102,7 @@ def main():
     mode = 1 # Accueil
     phone.home()
 
-    delai_veille = 100 # En ticks, 10s avec diviseur=100
+    delai_veille = 1000 # En ticks, 10s avec diviseur=100
     count_delai = 0
     delai = True
 
@@ -122,7 +122,6 @@ def main():
                     phone.home()
                     delai = True
                     count_delai = 0
-                    delai_veille = 5000
 
             # Vérifier si ça marche bien, si oui mettre en premier
             elif phone.fona.ring.get():
@@ -150,7 +149,6 @@ def main():
                     mode = 2 # Menu
                     phone.refresh_display()
                     count_delai = 0
-                    delai_veille = 10000
 
             # Vérifier si ça marche bien, si oui mettre en premier
             elif phone.fona.ring.get():
@@ -166,20 +164,22 @@ def main():
                     msg("[Debug] Passage au mode 1 (Accueil).", args)
                     mode = 1 # Accueil
                     phone.home()
-                    delai = True
                     count_delai = 0
-                    delai_veille = 5000
 
                 elif key == 'u':
+                    count_delai = 0
                     phone.scroll_up()
 
                 elif key == 'd':
+                    count_delai = 0
                     phone.scroll_down()
 
                 elif key == 'l':
+                    count_delai = 0
                     phone.go_parent()
 
                 elif key in ('r', 'o'):
+                    count_delai = 0
                     phone.go_child()
 
             # Vérifier si ça marche bien, si oui mettre en premier
@@ -197,7 +197,7 @@ def main():
 
             #msg("Batterie : {}".format(phone.fona.get_battery()), args)
 
-        # S'exécute après delai
+        # S'exécute après un certain delai
         if delai and count_delai >= delai_veille:
             count_delai = 0
 
@@ -213,7 +213,7 @@ def main():
                 msg("[Debug] Passage au mode 1 (Accueil).", args)
                 mode = 1 # Accueil
                 phone.home()
-                delai_veille = 5000
+                count_delai = 0
 
             else:
                 delai = False
