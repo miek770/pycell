@@ -80,11 +80,6 @@ class Phone:
 
         self.args = args
 
-        # Initialisation des boutons
-#        self.but_ok = Pin("J4.34", "INPUT")
-#        self.but_esc = Pin("J4.36", "INPUT")
-#        self.but_g25 = Pin("PC17", "INPUT")
-
         # Initialisation du OLED
         self.disp = SSD1306(rst="J4.12", dc="J4.14", cs="J4.11")
         self.disp.begin()
@@ -210,8 +205,7 @@ class Phone:
         self.tree = etree.parse(self.menufile)
         self.menu = self.tree.getroot()
         self.buff = list()
-        self.cursor = 0
-        self.previous_cursor = 0
+        self.cursor = [0]
 
         for m in self.menu:
             self.buff.append(m.find('Title').text)
@@ -239,32 +233,31 @@ class Phone:
     def insert_submenus(self, submenus):
 
         # Effacer les sous-menus actuels, si existants (niveau 1 et 2)
-        if self.menu[self.cursor].find('Submenu') is not None:
-            etree.strip_elements(self.menu[self.cursor], 'Submenu')
+        if self.menu[self.cursor[-1]].find('Submenu') is not None:
+            etree.strip_elements(self.menu[self.cursor[-1]], 'Submenu')
 
         # Popule le nouveau sous-menu (niveau 1)
-        etree.SubElement(self.menu[self.cursor], 'Submenu')
+        etree.SubElement(self.menu[self.cursor[-1]], 'Submenu')
         for menu in submenus:
 
             # Créé le sous-menu (niveau 2)
             msg(u'[Debug] menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]), self.args)
-            etree.SubElement(self.menu[self.cursor].find('Submenu'), menu[0])
+            etree.SubElement(self.menu[self.cursor[-1]].find('Submenu'), menu[0])
 
             # Nomme le sous-menu (niveau 2)
             if menu[1] is not None:
-                etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), 'Title')
-                self.menu[self.cursor].find('Submenu').find(menu[0]).find('Title').text = menu[1]
+                etree.SubElement(self.menu[self.cursor[-1]].find('Submenu').find(menu[0]), 'Title')
+                self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find('Title').text = menu[1]
 
             # Affecte l'action et la commande du sous-menu (niveau 2)
             if menu[2] is not None and menu[3] is not None:
-                etree.SubElement(self.menu[self.cursor].find('Submenu').find(menu[0]), menu[2])
-                self.menu[self.cursor].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
+                etree.SubElement(self.menu[self.cursor[-1]].find('Submenu').find(menu[0]), menu[2])
+                self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
     # Mise à jour du buffer de menu pour l'affichage
     def update_buffer(self):
         self.buff = list()
-        self.previous_cursor = self.cursor
-        self.cursor = 0
+        self.cursor.append(0)
 
         for m in self.menu:
             try:
@@ -276,41 +269,41 @@ class Phone:
     def go_child(self):
 
         # Le prochain niveau est un générateur
-        if self.menu[self.cursor].find('Generator') is not None:
-            msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor].find('Title').text), self.args)
+        if self.menu[self.cursor[-1]].find('Generator') is not None:
+            msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor[-1]].find('Title').text), self.args)
 
-            self.insert_submenus(self.create_submenus(self.menu[self.cursor].find('Generator').text))
-            self.menu = self.menu[self.cursor].find('Submenu')
+            self.insert_submenus(self.create_submenus(self.menu[self.cursor[-1]].find('Generator').text))
+            self.menu = self.menu[self.cursor[-1]].find('Submenu')
             self.update_buffer()
             self.refresh_display()
 
         # Le prochain niveau est une commande
-        elif self.menu[self.cursor].find('Exec') is not None:
-            msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor].find('Exec').text), self.args)
+        elif self.menu[self.cursor[-1]].find('Exec') is not None:
+            msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor[-1]].find('Exec').text), self.args)
             
-            self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor].find('Exec').text)))
-            self.menu = self.menu[self.cursor].find('Submenu')
+            self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor[-1]].find('Exec').text)))
+            self.menu = self.menu[self.cursor[-1]].find('Submenu')
             self.update_buffer()
             self.refresh_display()
 
         # Le prochain niveau est un sous-menu
-        elif self.menu[self.cursor].find('Submenu') is not None:
+        elif self.menu[self.cursor[-1]].find('Submenu') is not None:
             msg('[Debug] Descente dans le sous-menu', self.args)
 
-            self.menu = self.menu[self.cursor].find('Submenu')
+            self.menu = self.menu[self.cursor[-1]].find('Submenu')
             self.update_buffer()
             self.refresh_display()
 
         # Le prochain niveau n'a aucune action de définie (ex.: texte)
         else:
-            msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor].tag, ), self.args)
+            msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor[-1]].tag, ), self.args)
 
     # Remonte d'un niveau dans la navigation
     def go_parent(self):
         try:
             self.menu = self.menu.find('..').find('..')
             self.buff = list()
-            self.cursor = self.previous_cursor
+            self.cursor.pop()
 
             for m in self.menu:
                 self.buff.append(m.find('Title').text)
@@ -325,7 +318,7 @@ class Phone:
         self.clear_image()
 
         i = 0
-        for l in range(self.cursor, len(self.buff)):
+        for l in range(self.cursor[-1], len(self.buff)):
             if i < self.maxlines:
                 self.draw.text((0, 10*i), unicode(self.buff[l]), font=self.font, fill=255)
 #                if i == 0:
@@ -401,19 +394,19 @@ class Phone:
         return menu
 
     def scroll_down(self):
-        if self.cursor < len(self.buff) - 1:
-            self.cursor += 1
+        if self.cursor[-1] < len(self.buff) - 1:
+            self.cursor[-1] += 1
             self.refresh_display()
         else:
-            self.cursor = 0
+            self.cursor[-1] = 0
             self.refresh_display()
 
     def scroll_up(self):
-        if self.cursor > 0:
-            self.cursor -= 1
+        if self.cursor[-1] > 0:
+            self.cursor[-1] -= 1
             self.refresh_display()
         else:
-            self.cursor = len(self.buff) - 1
+            self.cursor[-1] = len(self.buff) - 1
             self.refresh_display()
 
     # Barre de notification

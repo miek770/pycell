@@ -4,9 +4,7 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-- C'est étrange, le module keys.py fonctionne bien tout seul mais dans main.py la mauvaise action est souvent lancée. Par exemple en appuyant sur 'down' le programme interprète 'up' ou 'left';
 - corriger les pins dans le circuit et le dts (un seul UART, un CS0);
-- Remplacer popup() par show() dans settings;
 - Désactiver les LEDs pour économiser l'énergie;
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
 - Créer un mode avion avec son icône;
@@ -14,7 +12,6 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Remplacer init par systemd;
 - Ajouter la synchronisation des contacts, courriels et événements;
 - Développer les menus de settings;
-- Ajouter un interrupteur ON/OFF;
 - L'application devrait arrêter et redémarrer le système au complet;
 - Tester / rechercher la veille sur WKUP.
 
