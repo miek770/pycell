@@ -195,6 +195,10 @@ def main():
         if count_100 >= 100:
             count_100 = 0
 
+            # Rafraichissement de l'accueil
+            if mode == 1: # Accueil
+                phone.home()
+
             #msg("Batterie : {}".format(phone.fona.get_battery()), args)
 
         # S'exécute après un certain delai
@@ -209,7 +213,7 @@ def main():
                 phone.clear_display()
                 phone.keypad_parent_conn.send(KEYS_SLOW)
 
-            elif mode == 2: # Accueil
+            elif mode == 2: # Menu
                 msg("[Debug] Passage au mode 1 (Accueil).", args)
                 mode = 1 # Accueil
                 phone.home()
