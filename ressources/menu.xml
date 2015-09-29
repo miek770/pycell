@@ -57,6 +57,21 @@
                 <Exec>shell("""ip addr | sed '/192.168/!d' | cut -d" " -f6""")</Exec>
             </Adresse>
 
+            <Espace>
+                <Title>Espace libre</Title>
+                <Exec>shell("""df -h -x tmpfs -x devtmpfs -x rootfs""")</Exec>
+            </Espace>
+
+            <JournalCell>
+                <Title>Journal cell.</Title>
+                <Exec>shell("""cat /var/log/pycell.log""")</Exec>
+            </JournalCell>
+
+            <JournalSys>
+                <Title>Journal sys.</Title>
+                <Exec>shell("""dmesg""")</Exec>
+            </JournalSys>
+
             <Batterie>
                 <Title>Niveau batterie</Title>
                 <Exec>method("self.fona.get_battery()")</Exec>
