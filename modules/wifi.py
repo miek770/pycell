@@ -22,7 +22,7 @@ class Wifi:
         status = sub.check_output(("iwconfig", self.iface))
         m = re_connected.search(status)
         if m:
-            msg("[Debug] {}".format(status), self.args)
+#            msg("[Debug] {}".format(status), self.args)
             self.essid = m.group(1)
 
             m = re_quality.search(status)
