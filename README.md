@@ -11,7 +11,6 @@ L'idée est de faire un téléphone portable (cellulaire) avec un système Linux
 - Investiguer le comportement du signal RING;
 - Remplacer init par systemd;
 - Ajouter la synchronisation des contacts, courriels et événements;
-- Développer les menus de settings;
 - L'application devrait arrêter et redémarrer le système au complet;
 - Tester / rechercher la veille sur WKUP.
 
