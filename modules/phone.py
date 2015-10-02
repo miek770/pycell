@@ -221,7 +221,14 @@ class Phone:
 
         # Génère les sous-menus à partir du générateur
         msg(u'[Debug] générateur = {}'.format(generator), self.args)
-        submenus = eval(u'self.{}'.format(generator))
+
+        try:
+            submenus = eval(u'self.{}'.format(generator))
+
+        except AttributeError:
+            msg("[Erreur] Méthode inexistante : Phone.{}".format(generator), self.args)
+            return [("Vide", u"Méthode inexistante", None, None)]
+
         msg(u'[Debug] submenus = {}'.format(submenus), self.args)
 
         return submenus
