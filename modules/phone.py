@@ -279,8 +279,13 @@ class Phone:
         # Le prochain niveau est une commande
         elif self.menu[self.cursor[-1]].find('Exec') is not None:
             logging.debug('Exécution de : {}'.format(self.menu[self.cursor[-1]].find('Exec').text))
-            
-            self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor[-1]].find('Exec').text)))
+           
+            try:
+                self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor[-1]].find('Exec').text)))
+            except AttributeError:
+                logging.error("Méthode inexistante : Phone.{}".format(self.menu[self.cursor[-1]].find('Exec').text))
+                self.insert_submenus([("Vide", u"Méthode inexistante", None, None)])
+
             self.menu = self.menu[self.cursor[-1]].find('Submenu')
             self.update_buffer()
             self.refresh_display()
