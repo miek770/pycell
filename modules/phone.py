@@ -262,6 +262,7 @@ class Phone:
                 self.buff.append(unicode(m.find('Title').text))
             except AttributeError:
                 logging.error('Aucun champ Title pour {}'.format(m.tag))
+                self.buff.append("")
 
     # Descend d'un niveau dans la navigation
     def go_child(self):
@@ -387,7 +388,7 @@ class Phone:
         menu = list()
 
         for line in split_msg:
-            menu.append((u'line' + unicode(split_msg.index(line)), line, None, None))
+            menu.append((u'line' + unicode(len(menu)), line, None, None))
 
         return menu
 
