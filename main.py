@@ -49,7 +49,7 @@ def main():
     args = parser.parse_args()
 
     log_frmt = '%(asctime)s[%(levelname)s] %(message)s'
-    date_frmt = '%Y/%m/%d %H:%M:%S '
+    date_frmt = '%Y-%m-%d %H:%M:%S '
 
     if args.verbose:
         log_lvl = logging.DEBUG
