@@ -22,9 +22,20 @@ class Wifi:
         status = sub.check_output(("iwconfig", self.iface))
         m = re_connected.search(status)
         if m:
+            msg("[Debug] {}".format(status), self.args)
             self.essid = m.group(1)
-            self.quality = int(re_quality.search(status).group(1))
-            self.signal = int(re_signal.search(status).group(1))
+
+            m = re_quality.search(status)
+            if m:
+                self.quality = int(m.group(1))
+            else:
+                self.quality = 0
+
+#            m = re_signal.search(status)
+#            if m:
+#                self.signal = int(m.group(1))
+#            else:
+#                self.signal = 0
 
         elif re_disconnected.search(status):
             self.essid = None

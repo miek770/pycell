@@ -21,6 +21,11 @@ from fona import Fona
 from wifi import Wifi
 from msg import msg
 
+# Expression régulières
+#=======================
+
+re_battery = re.compile(r"CBC: 0,([0-9]{2,3}),[0-9]?")
+
 # Arietta G25
 #=============
 
@@ -412,7 +417,12 @@ class Phone:
         width -= offset
         offset += batt_size[0] + self.tskbr_padding
 
-        charge = float(re.search(u"CBC: 0,([0-9]{2,3}),[0-9]?", self.fona.get_battery()).group(1))/100
+        m = re_battery.search(self.fona.get_battery())
+        if m:
+            charge = float(m.group(1))/100
+        else:
+            msg("[Erreur] Charge de batterie inconnue (pas de réponse du Fona).", self.args)
+            charge = 0.0
 
         # Enveloppe batterie
         draw.rectangle((width - (batt_size[0] - 1), 0, width - 1, batt_size[1] - 1),
