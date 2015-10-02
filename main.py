@@ -24,23 +24,10 @@
 import argparse, logging, sys, time, re
 from modules.phone import Phone
 from lxml import etree
+from modules.msg import msg
 
 KEYS_FAST = 0.05
 KEYS_SLOW = 0.5
-
-#===============================================================================
-# Fonction :    msg(msg, args, lvl)
-# Description : Cette fonction permet d'utiliser une seule fonction pour toute
-#               impression (print ou log) dependamment des arguments en ligne
-#               de commande. On ne devrait jamais utiliser directement 'print'
-#               et 'logging.log' dans le reste du programme, toujours 'msg'.
-#===============================================================================
-def msg(msg, args=None, lvl=logging.INFO):
-    if args is None or args.verbose:
-        print msg
-
-    elif args.logfile:
-        logging.log(lvl, msg)
 
 #===============================================================================
 # Fonction :    main

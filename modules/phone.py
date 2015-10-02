@@ -3,7 +3,7 @@
 #
 #  phone.py
 
-import argparse, logging, sys, time, re
+import argparse, sys, time, re
 from multiprocessing import Process, Pipe
 import subprocess as sub
 from datetime import datetime
@@ -11,12 +11,15 @@ from textwrap import wrap
 from time import sleep
 
 from PIL import Image, ImageDraw, ImageFont
-import keys
-from fona import Fona
 from SSD1306 import SSD1306
 from ablib import Pin
 
 from lxml import etree
+
+import keys
+from fona import Fona
+from wifi import Wifi
+from msg import msg
 
 # Arietta G25
 #=============
@@ -52,20 +55,6 @@ from lxml import etree
 #'J4.40' PB14
 
 #===============================================================================
-# Fonction :    msg(msg, args, lvl)
-# Description : Cette fonction permet d'utiliser une seule fonction pour toute
-#               impression (print ou log) dependamment des arguments en ligne
-#               de commande. On ne devrait jamais utiliser directement 'print'
-#               et 'logging.log' dans le reste du programme, toujours 'msg'.
-#===============================================================================
-def msg(msg, args=None, lvl=logging.INFO):
-    if args is None or args.verbose:
-        print msg
-
-    elif args.logfile:
-        logging.log(lvl, msg)
-
-#===============================================================================
 # Classe :      Phone
 # Description : Classe d'application générale.
 #===============================================================================
@@ -98,6 +87,9 @@ class Phone:
         # Initialisation du Fona
         self.fona = Fona(self.args)
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
+
+        # Initialisation du Wifi
+        self.wifi = Wifi(self.args)
 
         # Initialisation de la barre des tâches
         self.tskbr_size = 128, 6 
@@ -444,50 +436,6 @@ class Phone:
     def get_time(self):
         return datetime.strftime(datetime.now(), "%H:%M")
 
-    def draw_wifi(self, image, offset=0):
-        icon_size = 9, 6
-        draw = ImageDraw.Draw(image)
-        width, height = image.size
-
-        width -= offset
-        offset += icon_size[0] + self.tskbr_padding
-
-        signal = int(sub.check_output("cat /proc/net/wireless | grep wlan0 | cut -b 16-17", shell=True))
-        msg("[Debug] Wifi signal strength = {}".format(signal), self.args)
-
-        try:
-
-            # 2 = Connected
-            if signal > 0:
-                msg("[Debug] Wifi connected", self.args)
-                status = 2
-
-            # 1 = On, but disconnected
-            elif not sub.check_output("iwconfig wlan0 | grep ESSID", shell=True):
-                msg("[Debug] Wifi on, but disconnected", self.args)
-                status = 1
-
-            else:
-                msg("[Debug] Problème avec Phone.draw_wifi(), la détection de déconnexion ne fonctionne pas.", self.args)
-                status = 0
-
-        # 0 = Off
-        except sub.CalledProcessError:
-            msg("[Debug] Wifi off", self.args)
-            status = 0
-
-        p = [(4, 5),
-             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4)),
-             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4), (0, 2), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0), (6, 1), (7, 1), (8, 2)),
-             ]
-
-        # Décalage des points
-        points = tuple(map(lambda x: (width - icon_size[0] + x[0], x[1]), p[status]))
-
-        draw.point(points, fill=255)
-
-        return image, offset
-
     def draw_fona(self, image, offset=0, status=2): # Corriger status
         icon_size = 8, 6
         draw = ImageDraw.Draw(image)
@@ -576,6 +524,45 @@ class Phone:
 
         for l in lines:
             draw.line(l, fill=255)
+
+        return image, offset
+
+    def draw_wifi(self, image, offset=0):
+
+        self.wifi.get_status()
+
+        icon_size = 9, 6
+        draw = ImageDraw.Draw(image)
+        width, height = image.size
+
+        width -= offset
+        offset += icon_size[0] + self.tskbr_padding
+
+        # Connecté
+        if self.wifi.essid is not None:
+
+            msg("[Debug] Wifi connecté à : {}".format(self.wifi.essid), self.args)
+            msg("[Debug] Qualité connexion : {}/70".format(self.wifi.quality), self.args)
+
+            # High signal quality
+            if self.wifi.quality > 35:
+                status = 2
+            else:
+                status = 1
+
+        # Déconnecté
+        else:
+            status = 0
+
+        p = [(4, 5),
+             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4)),
+             ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4), (0, 2), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0), (6, 1), (7, 1), (8, 2)),
+             ]
+
+        # Décalage des points
+        points = tuple(map(lambda x: (width - icon_size[0] + x[0], x[1]), p[status]))
+
+        draw.point(points, fill=255)
 
         return image, offset
 
