@@ -1,9 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import re
+import re, logging
 import subprocess as sub
-from msg import msg
 
 re_connected = re.compile(r'ESSID:"(.*)"')
 re_disconnected = re.compile(r'ESSID:off/any')
@@ -11,8 +10,7 @@ re_quality = re.compile(r'Link Quality=([0-9]{1,2})/70')
 re_signal = re.compile(r'Signal level=(-{0,1}[0-9]{1,2}) dBm')
 
 class Wifi:
-    def __init__(self, args=None, iface="wlan0"):
-        self.args = args
+    def __init__(self, iface="wlan0"):
         self.iface = iface
         self.essid = None
         self.quality = None
@@ -22,7 +20,7 @@ class Wifi:
         status = sub.check_output(("iwconfig", self.iface))
         m = re_connected.search(status)
         if m:
-#            msg("[Debug] {}".format(status), self.args)
+#            logging.debug(status)
             self.essid = m.group(1)
 
             m = re_quality.search(status)
@@ -43,7 +41,7 @@ class Wifi:
             self.signal = None
 
         else:
-            msg("[Erreur] État wifi non-reconnu.", self.args)
+            logging.error("État wifi non-reconnu.")
             
 # Sample output (connected / disconnected)
 

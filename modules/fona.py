@@ -7,8 +7,6 @@ import re, serial, sys
 from ablib import Pin
 import logging
 
-from msg import msg
-
 #===============================================================================
 # Classe :      SMS
 # Description : Message SMS.
@@ -32,8 +30,7 @@ class Fona:
 
     # Initialisation
     #================
-    def __init__(self, args=None, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32'):
-        self.args = args
+    def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32'):
 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 115200
@@ -55,14 +52,14 @@ class Fona:
 
         # Démarre le Fona s'il ne l'est pas déja
         if not self.pwr:
-            msg('Demarrage du module Fona...', self.args)
+            logging.info('Demarrage du module Fona...')
             self.power_key.off()
             sleep(2)
             self.power_key.on()
             sleep(2)
 
-        msg('Power Status: ' + str(self.pwr), self.args)
-        msg('Ring Indicator: ' + str(self.rng), self.args)
+        logging.debug('Power Status: ' + str(self.pwr))
+        logging.debug('Ring Indicator: ' + str(self.rng))
 
         # Configuration générale
         self.set_echo(False)
@@ -85,7 +82,7 @@ class Fona:
     #======================================================
 
     def turn_off(self):
-        msg('Fermeture du module Fona...', self.args)
+        logging.info('Fermeture du module Fona...')
         self.power_key.off()
         sleep(2)
         self.power_key.on()
@@ -133,11 +130,11 @@ class Fona:
         tmp = self.power_status.get()
         if tmp != self.pwr:
             self.pwr = tmp
-            msg('Power Status: ' + str(self.pwr), self.args)
+            logging.debug('Power Status: ' + str(self.pwr))
         tmp = self.ring.get()
         if tmp != self.rng:
             self.rng = tmp
-            msg('Ring Indicator: ' + str(self.rng), self.args)
+            logging.debug('Ring Indicator: ' + str(self.rng))
 
     def get_battery(self):
         return self.write('AT+CBC')
@@ -204,7 +201,7 @@ class Fona:
 
     def read_sms(self, id):
         sms = self.write('AT+CMGR={0}'.format(int(id))).split('+CMGR: ')
-        msg('[Debug] SMS : {}'.format(sms), self.args)
+        logging.debug('SMS : {}'.format(sms))
 
         index = int(id)
 
@@ -259,7 +256,7 @@ class Fona:
 
             liste_sms.append(SMS(index, status, number, when, message))
 
-        msg("[Debug] read_all_sms() : {}".format(message), self.args)
+        logging.debug("read_all_sms() : {}".format(message))
         return liste_sms
 
     # Commandes liées à la voix

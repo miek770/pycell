@@ -4,8 +4,6 @@
 from ablib import Pin
 from time import sleep, time
 
-from msg import msg
-
 class Keypad:
     def __init__(self, period=0.05, delay=0.3):
 

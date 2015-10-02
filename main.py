@@ -24,7 +24,6 @@
 import argparse, logging, sys, time, re
 from modules.phone import Phone
 from lxml import etree
-from modules.msg import msg
 
 KEYS_FAST = 0.05
 KEYS_SLOW = 0.5
@@ -44,24 +43,28 @@ def main():
     parser.add_argument('-l',
                         '--logfile',
                         action='store',
+                        default=None,
                         help="Spécifie le chemin du journal d'événement.")
 
     args = parser.parse_args()
 
-    if args.logfile:
-        logging.basicConfig(filename=args.logfile,
-                            format='%(asctime)s[%(levelname)s] %(message)s',
-                            datefmt='%Y/%m/%d %H:%M:%S ',
-                            level=logging.DEBUG)
+    log_frmt = '%(asctime)s[%(levelname)s] %(message)s'
+    date_frmt = '%Y/%m/%d %H:%M:%S '
 
-        msg('Logger initié : ' + args.logfile, args)
+    if args.verbose:
+        log_lvl = logging.DEBUG
+    else:
+        log_lvl = logging.WARNING
 
-    msg('Programme lancé.', args)
+    logging.basicConfig(filename=args.logfile, format=log_frmt, datefmt=date_frmt, level=log_lvl)
+    logging.info("Logger initié : {}".format(args.logfile))
+
+    logging.info('Programme lancé.')
 
     # Lancement des sous-routines
     #=============================
 
-    phone = Phone(args)
+    phone = Phone()
 
     # Boucle principale
     #===================
@@ -102,7 +105,7 @@ def main():
                 key = phone.keypad_parent_conn.recv()
 
                 if key == 'o':
-                    msg("[Debug] Passage au mode 1 (Accueil).", args)
+                    logging.debug("Passage au mode 1 (Accueil).")
                     mode = 1 # Accueil
                     diviseur = 100
                     phone.keypad_parent_conn.send(KEYS_FAST)
@@ -112,7 +115,7 @@ def main():
 
             # Vérifier si ça marche bien, si oui mettre en premier
             elif phone.fona.ring.get():
-                #msg("[Debug] Passage au mode 12 (appel entrant)", args)
+                #logging.debug("Passage au mode 12 (appel entrant)")
                 pass
 
         elif mode == 1: # Accueil
@@ -121,7 +124,7 @@ def main():
                 key = phone.keypad_parent_conn.recv()
 
                 if key == 'e':
-                    msg("[Debug] Passage au mode 0 (Veille).", args)
+                    logging.debug("Passage au mode 0 (Veille).")
                     mode = 0 # Veille
                     diviseur = 10
                     phone.clear_display()
@@ -129,17 +132,17 @@ def main():
                     delai = False
 
                 elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
-                    msg("[Debug] Passage au mode 12 (composition).", args)
+                    logging.debug("Passage au mode 12 (composition).")
 
                 elif key in ('o', 'l', 'r', 'u', 'd'):
-                    msg("[Debug] Passage au mode 2 (Menu).", args)
+                    logging.debug("Passage au mode 2 (Menu).")
                     mode = 2 # Menu
                     phone.refresh_display()
                     count_delai = 0
 
             # Vérifier si ça marche bien, si oui mettre en premier
             elif phone.fona.ring.get():
-                #msg("[Debug] Passage au mode 12 (appel entrant)", args)
+                #logging.debug("Passage au mode 12 (appel entrant)")
                 pass
 
         elif mode == 2: # Menu
@@ -148,7 +151,7 @@ def main():
                 key = phone.keypad_parent_conn.recv()
 
                 if key == 'e':
-                    msg("[Debug] Passage au mode 1 (Accueil).", args)
+                    logging.debug("Passage au mode 1 (Accueil).")
                     mode = 1 # Accueil
                     phone.home()
                     count_delai = 0
@@ -171,7 +174,7 @@ def main():
 
             # Vérifier si ça marche bien, si oui mettre en premier
             elif phone.fona.ring.get():
-                #msg("[Debug] Passage au mode 12 (appel entrant)", args)
+                #logging.debug("Passage au mode 12 (appel entrant)")
                 pass
 
         # S'exécute toutes les 10 ticks (tous les 100ms par défaut)
@@ -186,14 +189,14 @@ def main():
             if mode == 1: # Accueil
                 phone.home()
 
-            #msg("Batterie : {}".format(phone.fona.get_battery()), args)
+            #logging.debug("Batterie : {}".format(phone.fona.get_battery()))
 
         # S'exécute après un certain delai
         if delai and count_delai >= delai_veille:
             count_delai = 0
 
             if mode == 1: # Accueil
-                msg("[Debug] Passage au mode 0 (Veille).", args)
+                logging.debug("Passage au mode 0 (Veille).")
                 delai = False
                 mode = 0 # Veille
                 diviseur = 10
@@ -201,7 +204,7 @@ def main():
                 phone.keypad_parent_conn.send(KEYS_SLOW)
 
             elif mode == 2: # Menu
-                msg("[Debug] Passage au mode 1 (Accueil).", args)
+                logging.debug("Passage au mode 1 (Accueil).")
                 mode = 1 # Accueil
                 phone.home()
                 count_delai = 0
@@ -227,10 +230,10 @@ if __name__ == '__main__':
             main()
 
         except KeyboardInterrupt:
-            msg("[Debug] Interruption du programme.")
+            logging.debug("Interruption du programme.")
             sys.exit()
 
 #        except:
-#            msg("[Erreur] {}".format(sys.exc_info()))
+#            logging.error(sys.exc_info())
 #            sys.exit()
 

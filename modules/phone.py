@@ -3,7 +3,7 @@
 #
 #  phone.py
 
-import argparse, sys, time, re
+import argparse, sys, time, re, logging
 from multiprocessing import Process, Pipe
 import subprocess as sub
 from datetime import datetime
@@ -19,7 +19,6 @@ from lxml import etree
 import keys
 from fona import Fona
 from wifi import Wifi
-from msg import msg
 
 # Expression régulières
 #=======================
@@ -67,12 +66,7 @@ class Phone:
 
     # Initialisation
     #================
-    def __init__(self,
-                 args=None,
-                 menufile="ressources/menu.xml",
-                 ):
-
-        self.args = args
+    def __init__(self, menufile="ressources/menu.xml"):
 
         # Initialisation du OLED
         self.disp = SSD1306(rst="J4.12", dc="J4.14", cs="J4.11")
@@ -90,11 +84,11 @@ class Phone:
         self.init_keypad()
 
         # Initialisation du Fona
-        self.fona = Fona(self.args)
+        self.fona = Fona()
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
 
         # Initialisation du Wifi
-        self.wifi = Wifi(self.args)
+        self.wifi = Wifi()
 
         # Initialisation de la barre des tâches
         self.tskbr_size = 128, 6 
@@ -220,16 +214,16 @@ class Phone:
     def create_submenus(self, generator):
 
         # Génère les sous-menus à partir du générateur
-        msg(u'[Debug] générateur = {}'.format(generator), self.args)
+        logging.debug(u'générateur = {}'.format(generator))
 
         try:
             submenus = eval(u'self.{}'.format(generator))
 
         except AttributeError:
-            msg("[Erreur] Méthode inexistante : Phone.{}".format(generator), self.args)
+            logging.error("Méthode inexistante : Phone.{}".format(generator))
             return [("Vide", u"Méthode inexistante", None, None)]
 
-        msg(u'[Debug] submenus = {}'.format(submenus), self.args)
+        logging.debug(u'submenus = {}'.format(submenus))
 
         return submenus
 
@@ -245,7 +239,7 @@ class Phone:
         for menu in submenus:
 
             # Créé le sous-menu (niveau 2)
-            msg(u'[Debug] menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]), self.args)
+            logging.debug(u'menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]))
             etree.SubElement(self.menu[self.cursor[-1]].find('Submenu'), menu[0])
 
             # Nomme le sous-menu (niveau 2)
@@ -267,14 +261,14 @@ class Phone:
             try:
                 self.buff.append(unicode(m.find('Title').text))
             except AttributeError:
-                msg('[Erreur] Aucun champ Title pour {}'.format(m.tag), self.args)
+                logging.error('Aucun champ Title pour {}'.format(m.tag))
 
     # Descend d'un niveau dans la navigation
     def go_child(self):
 
         # Le prochain niveau est un générateur
         if self.menu[self.cursor[-1]].find('Generator') is not None:
-            msg('[Debug] Génération de sous-menus dans {}'.format(self.menu[self.cursor[-1]].find('Title').text), self.args)
+            logging.debug('Génération de sous-menus dans {}'.format(self.menu[self.cursor[-1]].find('Title').text))
 
             self.insert_submenus(self.create_submenus(self.menu[self.cursor[-1]].find('Generator').text))
             self.menu = self.menu[self.cursor[-1]].find('Submenu')
@@ -283,7 +277,7 @@ class Phone:
 
         # Le prochain niveau est une commande
         elif self.menu[self.cursor[-1]].find('Exec') is not None:
-            msg('[Debug] Exécution de : {}'.format(self.menu[self.cursor[-1]].find('Exec').text), self.args)
+            logging.debug('Exécution de : {}'.format(self.menu[self.cursor[-1]].find('Exec').text))
             
             self.insert_submenus(eval(u'self.{}'.format(self.menu[self.cursor[-1]].find('Exec').text)))
             self.menu = self.menu[self.cursor[-1]].find('Submenu')
@@ -292,7 +286,7 @@ class Phone:
 
         # Le prochain niveau est un sous-menu
         elif self.menu[self.cursor[-1]].find('Submenu') is not None:
-            msg('[Debug] Descente dans le sous-menu', self.args)
+            logging.debug('Descente dans le sous-menu')
 
             self.menu = self.menu[self.cursor[-1]].find('Submenu')
             self.update_buffer()
@@ -300,7 +294,7 @@ class Phone:
 
         # Le prochain niveau n'a aucune action de définie (ex.: texte)
         else:
-            msg('[Debug] Aucune action de définie pour {}'.format(self.menu[self.cursor[-1]].tag, ), self.args)
+            logging.debug('Aucune action de définie pour {}'.format(self.menu[self.cursor[-1]].tag, ))
 
     # Remonte d'un niveau dans la navigation
     def go_parent(self):
@@ -315,7 +309,7 @@ class Phone:
             self.refresh_display()
 
         except AttributeError:
-            msg('[Debug] Aucun menu parent pour {}'.format(self.menu.tag), self.args)
+            logging.debug('Aucun menu parent pour {}'.format(self.menu.tag))
 
     # Synchronise le OLED
     def refresh_display(self):
@@ -339,7 +333,7 @@ class Phone:
     def show(self, message):
         if message.__class__ != unicode:
             message = message.decode('utf-8')
-        msg(u'[Debug] message = {}'.format(message), self.args)
+        logging.debug(u'message = {}'.format(message))
         words = message.split()
 
         split_msg = [u'']
@@ -428,7 +422,7 @@ class Phone:
         if m:
             charge = float(m.group(1))/100
         else:
-            msg("[Erreur] Charge de batterie inconnue (pas de réponse du Fona).", self.args)
+            logging.error("Charge de batterie inconnue (pas de réponse du Fona).")
             charge = 0.0
 
         # Enveloppe batterie
@@ -558,8 +552,8 @@ class Phone:
         # Connecté
         if self.wifi.essid is not None:
 
-            msg("[Debug] Wifi connecté à : {}".format(self.wifi.essid), self.args)
-            msg("[Debug] Qualité connexion : {}/70".format(self.wifi.quality), self.args)
+            logging.debug("Wifi connecté à : {}".format(self.wifi.essid))
+            logging.debug("Qualité connexion : {}/70".format(self.wifi.quality))
 
             # High signal quality
             if self.wifi.quality > 35:
