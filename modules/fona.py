@@ -78,6 +78,9 @@ class Fona:
         self.set_mic_gain(1,10)
         self.set_mic_bias(True)
 
+        # Désactive les LED pour économiser de l'énergie
+        self.set_netlight(False)
+
     # Commandes de base et configuration
     #======================================================
 
@@ -164,8 +167,20 @@ class Fona:
         else:
             return self.write('AT+CBUZZERRING=0')
 
+    def set_netlight(self, state):
+        if state:
+            return self.write('AT+CNETLIGHT=1')
+        else:
+            return self.write('AT+CNETLIGHT=0')
+
     # Commandes liées aux SMS
     #==================================
+
+    # Handy commands from Adafruit
+
+    # RI on SMS receipt
+    # AT+CFGRI=1
+    # The RI pin will pulse low for ~100ms when an SMS is received
 
     def get_force_ascii(self):
         return self.write('AT+CMGHEX?')
