@@ -167,11 +167,20 @@ class Fona:
         else:
             return self.write('AT+CBUZZERRING=0')
 
+    # Si unsuffisant, utiliser AT+CSGS en plus de AT+CNETLIGHT
+
     def set_netlight(self, state):
         if state:
             return self.write('AT+CNETLIGHT=1')
         else:
             return self.write('AT+CNETLIGHT=0')
+
+    def get_status(self):
+        # 0 = Ready
+        # 2 = Unknown
+        # 3 = Ringing
+        # 4 = Call in progress
+        return self.write('AT+CPAS')
 
     # Commandes liées aux SMS
     #==================================
@@ -274,11 +283,23 @@ class Fona:
         logging.debug("read_all_sms() : {}".format(message))
         return liste_sms
 
+    def delete_all_sms(self, type="DEL ALL"):
+        # DEL ALL
+        # DEL READ
+        # DEL UNREAD
+        # DEL SENT
+        # DEL UNSENT
+        # DEL INBOX
+        return self.write('AT+CMGDA="{}"'.format(type))
+
     # Commandes liées à la voix
     #===========================
 
     def call(self, number):
         return self.write('ATD{0};'.format(number))
+
+    def get_call_ready(self):
+        return self.write('AT+CCALR?')
 
     def hang_up(self):
         return self.write('ATH')
@@ -333,6 +354,19 @@ class Fona:
             return self.write('AT+CMICBIAS=1')
         else:
             return self.write('AT+CMICBIAS=0')
+
+    def gen_dtmf(self, duration=10, string='0'):
+        return self.write('AT+CLDTMF={},{}'.format(duration, string))
+
+    # Considérer AT+SSTONE également pour tester le speaker. C'est ce
+    # qu'Adafruit utilise dans son tutoriel avec le Arduino.
+
+    # Alarmes (à développer)
+    #========================
+
+    # AT+CALA Set alarm time
+    # AT+CALD Delete alarm
+    # AT+CLTS Get local timestamp
 
     # Générateurs (associés à ../ressources/menu.xml)
     #==============================================
