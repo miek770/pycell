@@ -160,8 +160,12 @@ class Phone:
         self.keypad_sub.terminate()
         self.fona.turn_off()
         self.clear_display()
-        if not soft:
+        if soft:
+            logging.info("Fin du programme.")
             sys.exit()
+        else:
+            logging.info("Fermeture du Arietta.")
+            sub.call(["shutdown", "-h", "-H", "now"])
 
     def shell(self, command):
         output = sub.check_output(command, shell=True)
