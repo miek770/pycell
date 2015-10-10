@@ -96,6 +96,10 @@ def main():
     count_delai = 0
     delai = True
 
+    # Pour la composition
+    numero = ""
+    dtmf_dur = 2
+
     while True:
 
         # S'exécute à chaque fois (tous les 10ms par défaut)
@@ -132,7 +136,11 @@ def main():
                     delai = False
 
                 elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
-                    logging.debug("Passage au mode 12 (composition).")
+                    logging.debug("Passage au mode 11 (composition).")
+                    mode = 11 # Composition
+                    delai = False
+                    numero = key
+                    phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
 
                 elif key in ('o', 'l', 'r', 'u', 'd'):
                     logging.debug("Passage au mode 2 (Menu).")
@@ -176,6 +184,26 @@ def main():
             elif phone.fona.ring.get():
                 #logging.debug("Passage au mode 12 (appel entrant)")
                 pass
+
+        elif mode == 11: # Composition
+
+            if phone.keypad_parent_conn.poll():
+                key = phone.keypad_parent_conn.recv()
+
+                if key == 'o':
+                    logging.debug("Appel, devrait ajouter davantage de vérifications avant.")
+                    phone.fona.call(numero)
+
+                elif key == 'e':
+                    logging.debug("Annule l'appel. Retour au mode 1 (Accueil).")
+                    mode = 1 # Accueil
+                    phone.home()
+                    delai = True
+                    count_delai = 0
+
+                elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
+                    numero += key
+                    phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
 
         # S'exécute toutes les 10 ticks (tous les 100ms par défaut)
         if count_10 >= 10:

@@ -158,6 +158,9 @@ class Fona:
     def stop_tone(self):
         return self.write('AT+STTONE=0')
 
+    def gen_dtmf(self, duration=10, string=0):
+        return self.write('AT+CLDTMF={},"{}"'.format(duration, string))
+
     def get_buzzer(self):
         return self.write('AT+CBUZZERRING?')
 
