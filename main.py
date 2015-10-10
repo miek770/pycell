@@ -142,6 +142,7 @@ def main():
                     delai = False
                     numero = key
                     phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
+                    phone.draw_text(numero)
 
                 elif key in ('o', 'l', 'r', 'u', 'd'):
                     logging.debug("Passage au mode 2 (Menu).")
@@ -219,6 +220,7 @@ def main():
                 elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
                     numero += key
                     phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
+                    phone.draw_text(numero)
 
         # S'exécute toutes les 10 ticks (tous les 100ms par défaut)
         if count_10 >= 10:

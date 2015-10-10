@@ -321,7 +321,7 @@ class Phone:
         except AttributeError:
             logging.debug('Aucun menu parent pour {}'.format(self.menu.tag))
 
-    # Synchronise le OLED
+    # Synchronise le OLED avec le buffer
     def refresh_display(self):
         self.clear_image()
 
@@ -425,6 +425,17 @@ class Phone:
         else:
             self.cursor[-1] = len(self.buff) - 1
             self.refresh_display()
+
+    # Affiche le texte pour le mode composition. À développer davantage pour permettre
+    # l'édition en temps réel.
+    def draw_text(self, text):
+
+        self.clear_image()
+        self.draw.text((0, 10*0), unicode(text), font=self.font, fill=255)
+
+        # Display image.
+        self.disp.image(self.image)
+        self.disp.display()
 
     # Barre de notification
     #=======================
