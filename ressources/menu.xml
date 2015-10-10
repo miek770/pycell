@@ -97,7 +97,7 @@
 
     <Shutdown>
         <Title>Éteindre</Title>
-        <Exec>shutdown()</Exec>
+        <Exec>shutdown(soft=True)</Exec>
     </Shutdown>
 
 </MainMenu>

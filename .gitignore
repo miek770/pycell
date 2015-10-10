@@ -2,3 +2,4 @@ modules/*.pyc
 *.pyc
 *~
 *.csv
+*.pkl

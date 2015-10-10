@@ -138,6 +138,7 @@ def main():
                 elif key in ('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '#'):
                     logging.debug("Passage au mode 11 (composition).")
                     mode = 11 # Composition
+                    phone.clear_display()
                     delai = False
                     numero = key
                     phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
@@ -185,14 +186,28 @@ def main():
                 #logging.debug("Passage au mode 12 (appel entrant)")
                 pass
 
+        elif mode == 10: # Appel en cours
+
+            if phone.keypad_parent_conn.poll():
+                key = phone.keypad_parent_conn.recv()
+
+                if key == 'e':
+                    logging.debug("Raccroche. Retour au mode 1 (Accueil).")
+                    phone.fona.hang_up()
+                    mode = 1 # Accueil
+                    phone.home()
+                    delai = True
+                    count_delai = 0
+
         elif mode == 11: # Composition
 
             if phone.keypad_parent_conn.poll():
                 key = phone.keypad_parent_conn.recv()
 
                 if key == 'o':
-                    logging.debug("Appel, devrait ajouter davantage de vérifications avant.")
+                    logging.debug("Passage au mode 10 (Appel en cours), devrait ajouter davantage de vérifications avant.")
                     phone.fona.call(numero)
+                    mode = 10 # Appel en cours
 
                 elif key == 'e':
                     logging.debug("Annule l'appel. Retour au mode 1 (Accueil).")

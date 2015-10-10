@@ -1,90 +1,113 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import logging, csv
 from cPickle import *
-import logging
 
 class AddressBook:
+    """Carnet d'adresse pour le projet pycell. Importe les contacts d'un fichier
+    CSV généré par Google en format UTF-8 (pour être compatible avec Outlook).
+    """
 
     def __init__(self, data_file="contacts.pkl"):
+        self.contacts = list()
         self.data_file = data_file
-        self.retreive_data()
+        self.retreive()
 
-    def retreive_data(self):
+    def retreive(self):
         try:
-            with open(self.data_file, 'r') as fichier:
+            with open(self.data_file, "rb") as f:
                 try:
-                    self.contacts = load(fichier)
-                except UnpicklingError as e:
-                    logging.error("Échec de récupération du carnet d'adresse : {}".format(e.strerror))
+                    self.contacts = load(f)
+                except EOFError:
+                    logging.error("Fichier vide : {}".format(self.data_file))
 
         except IOError as e:
-            logging.info("Échec de l'ouverture de {} : {}".format(self.data_file, e.strerror))
-            self.contacts = dict()
+            logging.info("Échec d'ouverture de {} : {}".format(self.data_file, e))
 
-    def save_data(self):
+    def save(self):
+        if len(self.contacts):
+            try:
+                with open(self.data_file, "w") as f:
+                    try:
+                        dump(self.contacts, f)
+                    except TypeError as e:
+                        logging.error("Échec d'écriture dans {} : {}".format(self.data_file, e))
+
+            except IOError as e:
+                logging.error("Échec d'ouverture de {} : {}".format(self.data_file, e))
+
+    def import_from_csv(self, csvfile):
+
+        tags = list()
+        contacts = list()
+
         try:
-            with open(self.data_file, 'w') as fichier:
-                try:
-                    dump(self.contacts, fichier)
-                except PicklingError as e:
-                    logging.error("Échec de sauvegarde du carnet d'adresse : {}".format(e.strerror))
+            with open(csvfile, "rb") as f:
+                reader = csv.reader(f, delimiter=",", quotechar='"')
+
+                first_line = True
+                for row in reader:
+                    if first_line:
+                        header = row
+                        first_line = False
+                        tags.append(("First Name", header.index("First Name")))
+                        tags.append(("Last Name", header.index("Last Name")))
+                        tags.append(("Primary Phone", header.index("Primary Phone")))
+                        tags.append(("Home Phone", header.index("Home Phone")))
+                        tags.append(("Mobile Phone", header.index("Mobile Phone")))
+                        tags.append(("Home Phone 2", header.index("Home Phone 2")))
+                        tags.append(("Pager", header.index("Pager")))
+                        tags.append(("Company Main Phone", header.index("Company Main Phone")))
+                        tags.append(("Business Phone", header.index("Business Phone")))
+                        tags.append(("Business Phone 2", header.index("Business Phone 2")))
+                        tags.append(("Assistant's Phone", header.index("Assistant's Phone")))
+                        tags.append(("Other Phone", header.index("Other Phone")))
+                        tags.append(("Car Phone", header.index("Car Phone")))
+
+                    else:
+                        contact = dict()
+                        for tag in tags:
+                            contact[tag[0]] = row[tag[1]]
+                        contacts.append(contact)
+
+            return contacts
 
         except IOError as e:
-            logging.error("Échec de l'ouverture de {} : {}".format(self.data_file, e.strerror))
+            logging.error("Échec d'ouverture de {} : {}".format(csvfile, e))
 
-    def new_contact(self, firstname, lastname, mobile_number=None, home_number=None, work_number=None, main=0):
-        try:
-            firstname = unicode(firstname)
-            lastname = unicode(lastname)
-            c = Contact(firstname, lastname, mobile_number, home_number, work_number, main)
-            self.contacts["{} {}".format(firstname, lastname)] = c
-            logging.debug("Nouveau contact créé : {}".format(c.get_name()))
+    def merge_contacts(self, csvfile):
+        contacts = self.import_from_csv(csvfile)
 
-        except UnicodeDecodeError as e:
-            logging.error("Contact entré en format non-unicode : {} {}".format(firstname, lastname))
+        for new in contacts:
+            if new["First Name"] != "" and new["Last Name"] != "":
+                match = False
 
-    def get_contact(self, name):
-        return self.contacts[name]
+                for old in self.contacts:
+                    if new["First Name"] == old["First Name"] and new["Last Name"] == old["Last Name"]:
+                        #logging.debug("Nouveau contact déjà présent, à fusionner : {} {}".format(new["First Name"], new["Last Name"]))
+                        match = True
 
-class Contact:
+                        for key in new.keys():
+                            if new[key] != "" and new[key] != old[key]:
+                                logging.debug("Mise à jour du champ {} pour {} {} : {}".format(key, new["First Name"], new["Last Name"], new[key]))
+                                old[key] = new[key]
 
-    # Main : 0=mobile, 1=home, 2=work
-    def __init__(self, firstname, lastname, mobile_number=None, home_number=None, work_number=None, main=0):
-        try:
-            self.firstname = unicode(firstname)
-            self.lastname = unicode(lastname)
+                if not match:
+                    logging.debug("Nouveau contact : {} {}".format(new["First Name"], new["Last Name"]))
+                    self.contacts.append(new)
 
-        except UnicodeDecodeError as e:
-            logging.error("Contact entré en format non-unicode : {} {}".format(firstname, lastname))
-
-        self.mobile_number = int(mobile_number)
-        self.home_number = int(home_number)
-        self.work_number = int(work_number)
-        self.main = main
-
-    def get_name(self):
-        return "{} {}".format(self.firstname, self.lastname)
-
-    def get_number(self, which=None):
-        if which is None:
-            which = self.main
-
-        if which == 0:
-            return self.mobile_number
-        elif which == 1:
-            return self.home_number
-        elif which == 2:
-            return self.work_number
-        else:
-            return None
-
-if __name__ == '__main__':
+def main():
     logging.basicConfig(level=logging.DEBUG)
+    logging.debug("Logger configuré")
+
     a = AddressBook()
-    a.new_contact(u"Michel", u"Lavoie", 15819951258, 14183532092, 14188713414, 0)
+    a.merge_contacts("outlook.csv")
+    a.save()
 
-    logging.debug("Contacts : {}".format(a.contacts))
+    for c in a.contacts:
+        print "{} {} :".format(c["First Name"], c["Last Name"])
+        for
 
-    logging.debug(a.get_contact(u"Michel Lavoie").get_number())
-
+if __name__ == "__main__":
+    main()
