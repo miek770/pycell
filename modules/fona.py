@@ -152,7 +152,7 @@ class Fona:
     def set_clock(self, when=datetime.now(), delta='-20'):
         return self.write('AT+CCLK="{:%y/%m/%d,%H:%M:%S}{}"'.format(when, delta))
 
-    def play_tone(self, tone, duration):
+    def play_tone(self, tone=6, duration=1000):
         return self.write('AT+STTONE=1,{},{}'.format(tone, duration))
 
     def stop_tone(self):
@@ -354,12 +354,6 @@ class Fona:
             return self.write('AT+CMICBIAS=1')
         else:
             return self.write('AT+CMICBIAS=0')
-
-    def gen_dtmf(self, duration=10, string='0'):
-        return self.write('AT+CLDTMF={},{}'.format(duration, string))
-
-    # Considérer AT+SSTONE également pour tester le speaker. C'est ce
-    # qu'Adafruit utilise dans son tutoriel avec le Arduino.
 
     # Alarmes (à développer)
     #========================
