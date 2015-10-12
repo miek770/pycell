@@ -4,7 +4,6 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-- Attendre "OK" dans Fona.write() et soulever "ERROR";
 - Corriger les pins dans le circuit et le dts (un seul UART, un CS0);
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
 - Créer un mode avion avec son icône;

@@ -30,16 +30,18 @@ class Fona:
 
     # Initialisation
     #================
-    def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32'):
+    def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32', retries=3):
 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 115200
         self.ser.bytesize = 8
         self.ser.parity = 'N'
         self.ser.stopbits = 1
-        self.ser.timeout = 0.1
+        self.ser.timeout = 0
         self.ser.xonxoff = 0
         self.ser.rtscts = 0
+
+        self.retries = retries
 
         # Configuration des pins de contrôle
         self.power_key = Pin(power_key, 'HIGH')
@@ -68,7 +70,6 @@ class Fona:
 
         # Configuration des SMS
         self.set_text_mode(True)
-        self.set_force_ascii(False)
         self.set_encoding(encoding='8859-1')
 
         # Active le son sur le speaker (et non le casque d'écoute)
@@ -93,20 +94,27 @@ class Fona:
     def power_off(self):
         self.turn_off()
 
-    def write(self, string):
-        # Au lieu de mettre un délai de 100ms je devrais attendre
-        # le retour du OK du Fona (revoir formule exacte), et
-        # soulever lorsque la réponse est ERREUR.
-
+    def write(self, string, delay=0.05):
         self.ser.write('{}\n'.format(string))
         logging.debug("Envoie au Fona : {}".format(string))
-        sleep(0.1)
-        reply = self.read(self.ser.inWaiting())
-        logging.debug("Retour du Fona : {}".format(reply))
+
+        test = 0
+        reply = None
+
+        while test < self.retries and reply is None:
+            sleep(delay)
+            reply = self.read()
+
+        if reply is None:
+            logging.error("Aucune réponse du Fona.")
+        elif "ERROR" in reply:
+            logging.error("Retour du Fona : {}".format(reply.replace("\n", "").replace("\r", "")))
+        else:
+            logging.debug("Retour du Fona : {}".format(reply.replace("\n", "").replace("\r", "")))
 
         return reply
 
-    def read(self, l=False):
+    def read(self):
         message = u''
         while self.new_data():
             message += unicode(self.ser.read(self.ser.inWaiting()).decode('latin-1'))
@@ -222,11 +230,11 @@ class Fona:
         sleep(0.05)
         self.ser.write('{0}{1}'.format(message, chr(26)))
         sleep(0.05)
-        return self.read(self.ser.inWaiting())
+        return self.read()
 
     def new_sms(self):
         if self.new_data():
-            r = self.read(self.ser.inWaiting())
+            r = self.read()
             if '+CMTI: "SM",' in r:
                 return r.split(',')[2]
             else:
