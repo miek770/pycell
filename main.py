@@ -28,11 +28,15 @@ from lxml import etree
 KEYS_FAST = 0.05
 KEYS_SLOW = 0.5
 
-#===============================================================================
-# Fonction :    main
-# Description : Routine principale
-#===============================================================================
 def main():
+    """Routine principale du Pycell. Les arguments sont traités, le journal est
+    initié, les sous-routines sont lancées et la boucle principale est
+    exécutée.
+
+    C'est dans cette boucle que les modes sont contrôlés (ex.: composition,
+    appel en cours, menus).
+    """
+
     parser = argparse.ArgumentParser(description='PyCell')
 
     parser.add_argument('-v',
@@ -222,6 +226,10 @@ def main():
                     phone.fona.gen_dtmf(duration=dtmf_dur, string=key)
                     phone.draw_text(numero)
 
+                elif key == 'l':
+                    numero = numero[:-1]
+                    phone.draw_text(numero)
+
         # S'exécute toutes les 10 ticks (tous les 100ms par défaut)
         if count_10 >= 10:
             count_10 = 0
@@ -275,7 +283,7 @@ if __name__ == '__main__':
             main()
 
         except KeyboardInterrupt:
-            logging.debug("Interruption du programme.")
+            logging.info("Interruption du programme.")
             sys.exit()
 
 #        except:

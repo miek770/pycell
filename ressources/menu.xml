@@ -95,6 +95,11 @@
         </Submenu>
     </Settings>
 
+    <Fortune>
+        <Title>Fortune</Title>
+        <Exec>shell("fortune")</Exec>
+    </Fortune>
+
     <Shutdown>
         <Title>Éteindre</Title>
         <Exec>shutdown(soft=True)</Exec>

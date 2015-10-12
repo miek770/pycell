@@ -167,7 +167,12 @@ class Phone:
             sub.call(["shutdown", "-h", "-H", "now"])
 
     def shell(self, command):
-        output = sub.check_output(command, shell=True)
+        try:
+            output = sub.check_output(command, shell=True)
+
+        except sub.CalledProcessError:
+            output = u"Erreur de l'exécution de : {}".format(command)
+
         return self.show(output)
 
     def method(self, command):
@@ -195,7 +200,9 @@ class Phone:
     #=======
 
     def init_menu(self):
-        # Initialise le menu
+        """Initialise le menu.
+        """
+
         self.tree = etree.parse(self.menufile)
         self.menu = self.tree.getroot()
         self.buff = list()
@@ -204,17 +211,17 @@ class Phone:
         for m in self.menu:
             self.buff.append(m.find('Title').text)
 
-    # Cette fonction crée des sous-menus à partir d'une liste de tuples bâtie ainsi :
-    # [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
-    #
-    #   Nom = Nom de l'élément (interne)
-    #   Titre = Titre de l'élément du menu à afficher
-    #   Action = "Exec" ou "Generator" ou None
-    #   Commande = Nom de la fonction à appeler
-    #
-    # Ce sont les générateurs qui produisent ces listes.
-
     def create_submenus(self, generator):
+        """Cette fonction crée des sous-menus à partir d'une liste de tuples bâtie ainsi :
+        [('Nom', 'Titre', 'Action', 'Commande'), ...] où :
+    
+        Nom = Nom de l'élément (interne)
+        Titre = Titre de l'élément du menu à afficher
+        Action = "Exec" ou "Generator" ou None
+        Commande = Nom de la fonction à appeler
+    
+        Ce sont les générateurs qui produisent ces listes.
+        """
 
         # Génère les sous-menus à partir du générateur
         logging.debug(u'générateur = {}'.format(generator))
@@ -230,8 +237,9 @@ class Phone:
 
         return submenus
 
-    # Insère les sous-menus dans l'arborescence existante
     def insert_submenus(self, submenus):
+        """Insère les sous-menus dans l'arborescence existante.
+        """
 
         # Effacer les sous-menus actuels, si existants (niveau 1 et 2)
         if self.menu[self.cursor[-1]].find('Submenu') is not None:
@@ -255,8 +263,10 @@ class Phone:
                 etree.SubElement(self.menu[self.cursor[-1]].find('Submenu').find(menu[0]), menu[2])
                 self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find(menu[2]).text = menu[3]
 
-    # Mise à jour du buffer de menu pour l'affichage
     def update_buffer(self):
+        """Mise à jour du buffer de menu pour l'affichage.
+        """
+
         self.buff = list()
         self.cursor.append(0)
 
@@ -267,8 +277,9 @@ class Phone:
                 logging.error('Aucun champ Title pour {}'.format(m.tag))
                 self.buff.append("")
 
-    # Descend d'un niveau dans la navigation
     def go_child(self):
+        """Descend d'un niveau dans la navigation
+        """
 
         # Le prochain niveau est un générateur
         if self.menu[self.cursor[-1]].find('Generator') is not None:
@@ -305,8 +316,10 @@ class Phone:
         else:
             logging.debug('Aucune action de définie pour {}'.format(self.menu[self.cursor[-1]].tag, ))
 
-    # Remonte d'un niveau dans la navigation
     def go_parent(self):
+        """Remonte d'un niveau dans la navigation.
+        """
+
         try:
             self.menu = self.menu.find('..').find('..')
             self.buff = list()
@@ -320,8 +333,10 @@ class Phone:
         except AttributeError:
             logging.debug('Aucun menu parent pour {}'.format(self.menu.tag))
 
-    # Synchronise le OLED avec le buffer
     def refresh_display(self):
+        """Synchronise le OLED avec le buffer
+        """
+
         self.clear_image()
 
         i = 0
@@ -338,8 +353,10 @@ class Phone:
         self.disp.image(self.image)
         self.disp.display()
 
-    # Retourne un menu composé des lignes de texte de "message"
     def show(self, message):
+        """Retourne un menu composé des lignes de texte de "message".
+        """
+
         if message.__class__ != unicode:
             message = message.decode('utf-8')
         logging.debug(u'message = {}'.format(message))
@@ -425,12 +442,12 @@ class Phone:
             self.cursor[-1] = len(self.buff) - 1
             self.refresh_display()
 
-    # Affiche le texte pour le mode composition. À développer davantage pour permettre
-    # l'édition en temps réel.
     def draw_text(self, text):
+        """Affiche le texte pour le mode composition.
+        """
 
         self.clear_image()
-        self.draw.text((0, 10*0), unicode(text), font=self.font, fill=255)
+        self.draw.text((0, 10*0), unicode(text) + u"_", font=self.font, fill=255)
 
         # Display image.
         self.disp.image(self.image)
