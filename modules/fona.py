@@ -30,7 +30,7 @@ class Fona:
 
     # Initialisation
     #================
-    def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32', retries=3):
+    def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32', retries=20):
 
         self.ser = serial.Serial(port)
         self.ser.baudrate = 115200
@@ -94,23 +94,34 @@ class Fona:
     def power_off(self):
         self.turn_off()
 
-    def write(self, string, delay=0.05):
+    def write(self, string, delay=0.01, keywords=("OK", "ERROR")):
         self.ser.write('{}\n'.format(string))
         logging.debug("Envoie au Fona : {}".format(string))
 
         test = 0
-        reply = None
+        reply = u""
+        complete = False
 
-        while test < self.retries and reply is None:
+        while test < self.retries and not complete:
             sleep(delay)
-            reply = self.read()
+            reply += self.read()
+
+            if len(reply):
+                for k in keywords:
+                    if k in reply:
+                        complete = True
+           
+                if not complete:
+                    logging.debug("Retour du Fona incomplet ({}), essai {}.".format(reply.replace("\r\n", ""), test))
+
+            test += 1
 
         if reply is None:
             logging.error("Aucune réponse du Fona.")
         elif "ERROR" in reply:
-            logging.error("Retour du Fona : {}".format(reply.replace("\n", "").replace("\r", "")))
+            logging.error("Retour du Fona : {}".format(reply.replace("\r\n", "")))
         else:
-            logging.debug("Retour du Fona : {}".format(reply.replace("\n", "").replace("\r", "")))
+            logging.debug("Retour du Fona : {}".format(reply.replace("\r\n", "")))
 
         return reply
 
