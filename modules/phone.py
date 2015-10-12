@@ -58,11 +58,9 @@ re_battery = re.compile(r"CBC: 0,([0-9]{2,3}),[0-9]?")
 #'J4.39' PC0    Row 0
 #'J4.40' PB14
 
-#===============================================================================
-# Classe :      Phone
-# Description : Classe d'application générale.
-#===============================================================================
 class Phone:
+    """Classe principale de l'application de téléphone cellulaire.
+    """
 
     # Initialisation
     #================
@@ -86,6 +84,7 @@ class Phone:
         # Initialisation du Fona
         self.fona = Fona()
         self.font = ImageFont.truetype('ressources/Minecraftia-Regular.ttf', 8)
+#        self.font = ImageFont.truetype('ressources/VeraMono.ttf', 8)
 
         # Initialisation du Wifi
         self.wifi = Wifi()

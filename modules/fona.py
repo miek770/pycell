@@ -94,9 +94,17 @@ class Fona:
         self.turn_off()
 
     def write(self, string):
+        # Au lieu de mettre un délai de 100ms je devrais attendre
+        # le retour du OK du Fona (revoir formule exacte), et
+        # soulever lorsque la réponse est ERREUR.
+
         self.ser.write('{}\n'.format(string))
+        logging.debug("Envoie au Fona : {}".format(string))
         sleep(0.1)
-        return self.read(self.ser.inWaiting())
+        reply = self.read(self.ser.inWaiting())
+        logging.debug("Retour du Fona : {}".format(reply))
+
+        return reply
 
     def read(self, l=False):
         message = u''
@@ -283,7 +291,7 @@ class Fona:
 
             liste_sms.append(SMS(index, status, number, when, message))
 
-        logging.debug("read_all_sms() : {}".format(message))
+        #logging.debug("read_all_sms() : {}".format(message))
         return liste_sms
 
     def delete_all_sms(self, type="DEL ALL"):

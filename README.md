@@ -4,15 +4,15 @@
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
 
-- corriger les pins dans le circuit et le dts (un seul UART, un CS0);
+- Attendre "OK" dans Fona.write() et soulever "ERROR";
+- Corriger les pins dans le circuit et le dts (un seul UART, un CS0);
 - Corriger le statut réseau (la pin est liée à la fréquence de la LED);
 - Créer un mode avion avec son icône;
 - Investiguer le comportement du signal RING;
 - Remplacer init par systemd;
 - Ajouter la synchronisation des contacts, courriels et événements;
 - L'application devrait arrêter et redémarrer le système au complet;
-- Tester / rechercher la veille sur WKUP;
-- Intégrer les codes d'erreur du FONA dans le module fona.py.
+- Tester / rechercher la veille sur WKUP.
 
 ## Matériel envisagé
 
