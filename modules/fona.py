@@ -96,7 +96,7 @@ class Fona:
 
     def write(self, string, delay=0.01, keywords=("OK", "ERROR")):
         self.ser.write('{}\n'.format(string))
-        logging.debug("Envoie au Fona : {}".format(string))
+        logging.debug(u"Envoie au Fona : {}".format(string))
 
         test = 0
         reply = u""
@@ -112,16 +112,16 @@ class Fona:
                         complete = True
            
                 if not complete:
-                    logging.debug("Retour du Fona incomplet ({}), essai {}.".format(reply.replace("\r\n", ""), test))
+                    logging.debug(u"Retour du Fona incomplet ({}), essai {}.".format(reply.replace("\r\n", ""), test))
 
             test += 1
 
         if reply is None:
-            logging.error("Aucune réponse du Fona.")
+            logging.error(u"Aucune réponse du Fona.")
         elif "ERROR" in reply:
-            logging.error("Retour du Fona : {}".format(reply.replace("\r\n", "")))
+            logging.error(u"Retour du Fona : {}".format(reply.replace("\r\n", "")))
         else:
-            logging.debug("Retour du Fona : {}".format(reply.replace("\r\n", "")))
+            logging.debug(u"Retour du Fona : {}".format(reply.replace("\r\n", "")))
 
         return reply
 
