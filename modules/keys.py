@@ -4,7 +4,22 @@
 from ablib import Pin
 from time import sleep, time
 
+clavier = dict()
+clavier["1"] = [".", ",", "1", ":", ";"]
+clavier["2"] = ["a", "b", "c", "2"]
+clavier["3"] = ["d", "e", "f", "3"]
+clavier["4"] = ["g", "h", "i", "4"]
+clavier["5"] = ["j", "k", "l", "5"]
+clavier["6"] = ["m", "n", "o", "6"]
+clavier["7"] = ["p", "q", "r", "s", "7"]
+clavier["8"] = ["t", "u", "v", "8"]
+clavier["9"] = ["w", "x", "y", "z", "9"]
+clavier["0"] = [" ", "0"]
+clavier["*"] = ["*", "@"]
+clavier["#"] = ["!", "?", "#", "\n"]
+
 class Keypad:
+
     def __init__(self, period=0.05, delay=0.3):
 
         self.row = list()

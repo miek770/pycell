@@ -24,6 +24,7 @@
 import argparse, logging, sys, time, re
 from modules.phone import Phone
 from lxml import etree
+import subprocess as sub
 
 KEYS_FAST = 0.05
 KEYS_SLOW = 0.5
@@ -284,9 +285,11 @@ if __name__ == '__main__':
 
         except KeyboardInterrupt:
             logging.info("Interruption du programme.")
-            sys.exit()
+            sys.exit(2)
 
-#        except:
-#            logging.error(sys.exc_info())
-#            sys.exit()
+        except:
+            sub.check_call(("ifup", "wlan0"))
+            print "Erreur imprévue : ", sys.exc_info()[0]
+            logging.error(sys.exc_info())
+            raise
 

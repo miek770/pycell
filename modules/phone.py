@@ -99,7 +99,7 @@ class Phone:
         self.tskbr_wifi = True
         self.tskbr_fona = True
         self.tskbr_message = True
-        self.tskbr_call = True
+        self.tskbr_call = False # Ne fonctionne pas
 
     # Général
     #=========
@@ -172,6 +172,10 @@ class Phone:
 
         except sub.CalledProcessError:
             output = u"Erreur de l'exécution de : {}".format(command)
+            logging.error(u"Erreur de l'exécution de : {}".format(command))
+
+        if not len(output):
+            output = u"Ok"
 
         return self.show(output)
 
@@ -593,10 +597,9 @@ class Phone:
         width, height = image.size
 
         width -= offset
-        offset += icon_size[0] + self.tskbr_padding
 
         # Connecté
-        if self.wifi.essid is not None:
+        if self.wifi.on and self.wifi.essid is not None:
 
             logging.debug("Wifi connecté à : {}".format(self.wifi.essid))
             logging.debug("Qualité connexion : {}/70".format(self.wifi.quality))
@@ -608,10 +611,15 @@ class Phone:
                 status = 1
 
         # Déconnecté
-        else:
+        elif self.wifi.on:
+            logging.debug("Wifi déconnecté.")
             status = 0
 
-        p = [(4, 5),
+        # Désactivé
+        else:
+            return image, offset
+
+        p = [((4, 5), ),
              ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4)),
              ((4, 5), (2, 4), (3, 3), (4, 3), (5, 3), (6, 4), (0, 2), (1, 1), (2, 1), (3, 0), (4, 0), (5, 0), (6, 1), (7, 1), (8, 2)),
              ]
@@ -619,6 +627,8 @@ class Phone:
         # Décalage des points
         points = tuple(map(lambda x: (width - icon_size[0] + x[0], x[1]), p[status]))
 
+        # Variables renvoyées
+        offset += icon_size[0] + self.tskbr_padding
         draw.point(points, fill=255)
 
         return image, offset

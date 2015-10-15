@@ -89,7 +89,24 @@
 
             <Wifi>
                 <Title>Wifi</Title>
-                <Exec>shell("""cat /proc/net/wireless""")</Exec>
+                <Submenu>
+
+                    <Etat>
+                        <Title>État</Title>
+                        <Exec>shell("""cat /proc/net/wireless""")</Exec>
+                    </Etat>
+                    
+                    <Activer>
+                        <Title>Activer</Title>
+                        <Exec>shell("""ifup wlan0""")</Exec>
+                    </Activer>
+
+                    <Desactiver>
+                        <Title>Désactiver</Title>
+                        <Exec>shell("""ifdown wlan0""")</Exec>
+                    </Desactiver>
+
+                  </Submenu>
             </Wifi>
 
         </Submenu>
