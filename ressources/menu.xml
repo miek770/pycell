@@ -117,9 +117,26 @@
         <Exec>shell("fortune")</Exec>
     </Fortune>
 
-    <Shutdown>
+    <Eteindre>
         <Title>Éteindre</Title>
-        <Exec>shutdown(soft=True)</Exec>
-    </Shutdown>
+        <Submenu>
+
+            <Soft>
+                <Title>Éteindre (pycell)</Title>
+                <Exec>shutdown(soft=True)</Exec>
+            </Soft>
+
+            <Hard>
+                <Title>Éteindre (arietta)</Title>
+                <Exec>shutdown(soft=False)</Exec>
+            </Hard>
+
+            <Restart>
+                <Title>Redémarrer (arietta)</Title>
+                <Exec>shutdown(soft=False, restart=True)</Exec>
+            </Restart>
+
+        </Submenu>
+    </Eteindre>
 
 </MainMenu>

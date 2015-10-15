@@ -155,16 +155,25 @@ class Phone:
     # Actions (items Exec dans le menu)
     #===================================
 
-    def shutdown(self, soft=False):
+    def shutdown(self, soft=False, restart=False):
+        """Sortie gracieuse du programme, ou fermeture du Arietta.
+        """
+
         self.keypad_sub.terminate()
         self.fona.turn_off()
         self.clear_display()
+
         if soft:
             logging.info("Fin du programme.")
             sys.exit()
-        else:
+
+        elif not restart:
             logging.info("Fermeture du Arietta.")
             sub.call(["shutdown", "-h", "-H", "now"])
+
+        else:
+            logging.info("Redémarrage du Arietta.")
+            sub.call(["shutdown", "-r", "now"])
 
     def shell(self, command):
         try:
