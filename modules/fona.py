@@ -78,7 +78,7 @@ class Fona:
 
         # Active le microphone
         self.set_mic(True)
-        self.set_mic_gain(1,10)
+        self.set_mic_gain(1,15)
         self.set_mic_bias(False)
 
         # Désactive les LED pour économiser de l'énergie
