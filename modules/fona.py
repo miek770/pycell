@@ -7,14 +7,16 @@ import re, serial, sys
 from ablib import Pin
 import logging
 
-#===============================================================================
-# Classe :      SMS
-# Description : Message SMS.
-#===============================================================================
-class SMS:
+# Expression régulières
+#=======================
 
-    # Initialisation
-    #================
+re_call_ready = re.compile(r"+CCALR: 1")
+re_phone_status = re.compile(r"+CPAS: ([0234])")
+
+class SMS:
+    """Message SMS.
+    """
+
     def __init__(self, index, status, number, when, message):
         self.index = index
         self.status = status
@@ -22,14 +24,10 @@ class SMS:
         self.when = when
         self.message = unicode(message)
 
-#===============================================================================
-# Classe :      Fona
-# Description : Wrapper pour le module Fona d'Adafruit (SIM800).
-#===============================================================================
 class Fona:
+    """Wrapper pour le module Fona d'Adafruit (SIM800).
+    """
 
-    # Initialisation
-    #================
     def __init__(self, port='/dev/ttyS1', power_key='J4.26', power_status='J4.28', network_status='J4.30', ring='J4.32', retries=20):
 
         self.ser = serial.Serial(port)
@@ -208,11 +206,23 @@ class Fona:
             return self.write('AT+CNETLIGHT=0')
 
     def get_status(self):
-        # 0 = Ready
-        # 2 = Unknown
-        # 3 = Ringing
-        # 4 = Call in progress
-        return self.write('AT+CPAS')
+        m = re_phone_status.search(self.write('AT+CPAS'))
+
+        if m is not None:
+            if m.group[1] == "0":
+                return "Ready"
+            elif m.group[1] == "2":
+                return "Unknown"
+            elif m.group[1] == "3":
+                return "Ringing"
+            elif m.group[1] == "4":
+                return "Call in progress"
+            else:
+                logging.error("Statut du Fona non-reconnu.")
+                return None
+        else:
+            logging.error("Statut du Fona non-reconnu.")
+            return None
 
     # Commandes liées aux SMS
     #==================================
@@ -331,7 +341,10 @@ class Fona:
         return self.write('ATD{0};'.format(number))
 
     def get_call_ready(self):
-        return self.write('AT+CCALR?')
+        if re_call_ready.search(self.write('AT+CCALR?')):
+            return True
+        else:
+            return False
 
     def hang_up(self):
         return self.write('ATH')

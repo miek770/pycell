@@ -211,9 +211,14 @@ def main():
                 key = phone.keypad_parent_conn.recv()
 
                 if key == 'o':
-                    logging.debug("Passage au mode 10 (Appel en cours), devrait ajouter davantage de vérifications avant.")
-                    phone.fona.call(numero)
-                    mode = 10 # Appel en cours
+
+                    if phone.fona.get_call_ready():
+                        logging.debug("Passage au mode 10 (Appel en cours).")
+                        phone.fona.call(numero)
+                        mode = 10 # Appel en cours
+                    else:
+                        phone.popup("E: Pas prêt!")
+                        time.sleep(3)
 
                 elif key == 'e':
                     logging.debug("Annule l'appel. Retour au mode 1 (Accueil).")

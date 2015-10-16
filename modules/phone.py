@@ -246,7 +246,7 @@ class Phone:
             logging.error("Méthode inexistante : Phone.{}".format(generator))
             return [("Vide", u"Méthode inexistante", None, None)]
 
-        logging.debug(u'submenus = {}'.format(submenus))
+        #logging.debug(u'submenus = {}'.format(submenus))
 
         return submenus
 
@@ -263,13 +263,19 @@ class Phone:
         for menu in submenus:
 
             # Créé le sous-menu (niveau 2)
-            logging.debug(u'menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]))
+            #logging.debug(u'menu = ({}, {}, {}, {})'.format(menu[0], menu[1], menu[2], menu[3]))
             etree.SubElement(self.menu[self.cursor[-1]].find('Submenu'), menu[0])
 
             # Nomme le sous-menu (niveau 2)
             if menu[1] is not None:
                 etree.SubElement(self.menu[self.cursor[-1]].find('Submenu').find(menu[0]), 'Title')
-                self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find('Title').text = menu[1]
+
+                try:
+                    self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find('Title').text = menu[1]
+
+                except ValueError:
+                    # All strings must be XML compatible: Unicode or ASCII, no NULL bytes or control characters
+                    self.menu[self.cursor[-1]].find('Submenu').find(menu[0]).find('Title').text = u"Caractère(s) invalide(s)"
 
             # Affecte l'action et la commande du sous-menu (niveau 2)
             if menu[2] is not None and menu[3] is not None:
@@ -372,7 +378,7 @@ class Phone:
 
         if message.__class__ != unicode:
             message = message.decode('utf-8')
-        logging.debug(u'message = {}'.format(message))
+        #logging.debug(u'message = {}'.format(message))
 
         lines = message.splitlines()
 
