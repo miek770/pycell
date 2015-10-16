@@ -75,9 +75,11 @@ class Fona:
         # Active le son sur le speaker (et non le casque d'écoute)
         self.set_audio_channel(1)
         self.set_volume(20)
+
+        # Active le microphone
         self.set_mic(True)
         self.set_mic_gain(1,10)
-        self.set_mic_bias(True)
+        self.set_mic_bias(False)
 
         # Désactive les LED pour économiser de l'énergie
         self.set_netlight(False)
@@ -372,18 +374,18 @@ class Fona:
 
     def set_mic(self, state):
         if state:
-            return self.write('AT+CEXTERNTONE=1')
-        else:
             return self.write('AT+CEXTERNTONE=0')
+        else:
+            return self.write('AT+CEXTERNTONE=1')
 
     def get_mic_bias(self):
         return self.write('AT+CMICBIAS?')
 
     def set_mic_bias(self, state):
         if state:
-            return self.write('AT+CMICBIAS=1')
-        else:
             return self.write('AT+CMICBIAS=0')
+        else:
+            return self.write('AT+CMICBIAS=1')
 
     # Alarmes (à développer)
     #========================

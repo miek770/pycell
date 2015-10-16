@@ -62,6 +62,53 @@
                 <Exec>shell("""df -h -x tmpfs -x devtmpfs -x rootfs""")</Exec>
             </Espace>
 
+            <Fona>
+                <Title>Fona</Title>
+                <Submenu>
+
+                    <Configuration>
+                        <Title>Configuration</Title>
+                        <Exec>method("self.fona.get_config()")</Exec>
+                    </Configuration>
+                    
+                    <Etat>
+                        <Title>État</Title>
+                        <Exec>method("self.fona.get_status()")</Exec>
+                    </Etat>
+                    
+                    <Horloge>
+                        <Title>Horloge</Title>
+                        <Exec>method("self.fona.get_clock()")</Exec>
+                    </Horloge>
+                    
+                    <NouveauSMS>
+                        <Title>Nouveau SMS?</Title>
+                        <Exec>method("self.fona.new_sms()")</Exec>
+                    </NouveauSMS>
+                    
+                    <Pret>
+                        <Title>Prêt?</Title>
+                        <Exec>method("self.fona.get_call_ready()")</Exec>
+                    </Pret>
+                    
+                    <Reseau>
+                        <Title>Réseau</Title>
+                        <Exec>method("self.fona.get_provider()")</Exec>
+                    </Reseau>
+                    
+                    <Sourdine>
+                        <Title>Sourdine?</Title>
+                        <Exec>method("self.fona.get_mute()")</Exec>
+                    </Sourdine>
+
+                    <Volume>
+                        <Title>Volume</Title>
+                        <Exec>method("self.fona.get_volume()")</Exec>
+                    </Volume>
+
+                   </Submenu>
+            </Fona>
+
             <JournalCell>
                 <Title>Journal cell.</Title>
                 <Exec>shell("""tail /var/log/pycell.log""")</Exec>
