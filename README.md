@@ -1,5 +1,9 @@
 # Projet de téléphone portable
 
+2016-11-26 : Ce projet est officiellement mort. Avec la disparition des réseaux 2G au Canada ça ne vaut pas la peine d'y consacrer plus de temps.
+
+2016-11-26: This project is officially dead. With the disapearance of 2G networks in Canada it's not work spending anymore time on this project.
+
 ## Sommaire
 
 L'idée est de faire un téléphone portable (cellulaire) avec un système Linux complet (incluant un gestionnaire de paquets) et les fonctionalités cellulaires essentielles.
